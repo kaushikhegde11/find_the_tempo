@@ -54,10 +54,10 @@ export default function UploadPage() {
         return
       }
 
-      // Stage 2: hand off to review (link lookups happen on the results page)
+      // Stage 2: hand off to results (link lookups + any edits happen there)
       setProcessingStage(2)
       setSongs(allSongs)
-      router.push('/review')
+      router.push('/results')
     } catch (error: any) {
       console.error('[Upload] Error processing files:', error)
       setError(error.message || 'Something went wrong while processing your screenshot.')

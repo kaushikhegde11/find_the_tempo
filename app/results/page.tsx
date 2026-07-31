@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
 import { ArrowLeft, Loader2, Info } from 'lucide-react'
 import { ResultsTable } from '@/components/results-table'
@@ -14,8 +14,53 @@ export default function ResultsPage() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
+  // Always hold the latest songs so async edits merge against fresh state.
+  const songsRef = useRef(songs)
+  songsRef.current = songs
+
   // Consider enriched once any song has an Apple link.
   const alreadyEnriched = songs.some((s) => s.appleMusicUrl)
+
+  // Re-run the Apple lookup for a single (edited) song and merge the result.
+  const applyApple = async (target: Song) => {
+    try {
+      const res = await fetch('/api/apple-music/search', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ songs: [target] }),
+      })
+      if (!res.ok) return
+      const enriched = (await res.json()).songs?.[0] as Song | undefined
+      if (enriched) setSongs(songsRef.current.map((s) => (s.id === target.id ? enriched : s)))
+    } catch {
+      /* keep the cleared song with key-free search links */
+    }
+  }
+
+  // Edit a song's name/artist: clear stale link data, then re-look-up Apple.
+  const handleEdit = (id: string, name: string, artist: string) => {
+    const base = songsRef.current.find((s) => s.id === id)
+    if (!base) return
+    const cleared: Song = {
+      ...base,
+      originalName: name,
+      artist,
+      appleMusicUrl: undefined,
+      appleTrackName: undefined,
+      appleArtist: undefined,
+      appleAlbum: undefined,
+      appleArtwork: undefined,
+      applePreviewUrl: undefined,
+      spotifyTrackId: undefined,
+      previewUrl: undefined,
+    }
+    setSongs(songsRef.current.map((s) => (s.id === id ? cleared : s)))
+    applyApple(cleared)
+  }
+
+  const handleDelete = (id: string) => {
+    setSongs(songsRef.current.filter((s) => s.id !== id))
+  }
 
   useEffect(() => {
     if (songs.length === 0 || alreadyEnriched) return
@@ -73,11 +118,11 @@ export default function ResultsPage() {
       <nav className="border-b border-border/50 bg-background/80 backdrop-blur-sm sticky top-0 z-50">
         <div className="mx-auto max-w-6xl px-6 py-4 sm:px-8">
           <Link
-            href="/review"
+            href="/upload"
             className="inline-flex items-center gap-2 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
           >
             <ArrowLeft className="h-4 w-4" />
-            Back to Review
+            Upload another
           </Link>
         </div>
       </nav>
@@ -90,6 +135,7 @@ export default function ResultsPage() {
             <h1 className="text-3xl font-bold text-foreground sm:text-4xl">Your songs</h1>
             <p className="text-muted-foreground">
               Preview each track, open it on your service, then add the ones you want to any playlist yourself.
+              Something misread? Edit a row to fix its links.
             </p>
           </div>
 
@@ -118,7 +164,14 @@ export default function ResultsPage() {
           )}
 
           {/* Table */}
-          {!loading && <ResultsTable songs={songs} platform={platform} />}
+          {!loading && (
+            <ResultsTable
+              songs={songs}
+              platform={platform}
+              onEdit={handleEdit}
+              onDelete={handleDelete}
+            />
+          )}
         </div>
       </section>
     </main>

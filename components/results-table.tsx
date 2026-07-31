@@ -3,7 +3,7 @@
 import { useRef, useState } from 'react'
 import { Song } from '@/lib/types'
 import { Platform } from '@/components/platform-toggle'
-import { Play, Pause, Music, ExternalLink, Copy, Check, Type, Table, Share2 } from 'lucide-react'
+import { Play, Pause, Music, ExternalLink, Copy, Check, Type, Table, Share2, Pencil, Trash2, X } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import {
   DropdownMenu,
@@ -16,6 +16,8 @@ import {
 interface ResultsTableProps {
   songs: Song[]
   platform: Platform
+  onEdit: (id: string, name: string, artist: string) => void
+  onDelete: (id: string) => void
 }
 
 const SERVICE_NAME: Record<Platform, string> = {
@@ -51,11 +53,26 @@ function linkFor(song: Song, platform: Platform): string | undefined {
   }
 }
 
-export function ResultsTable({ songs, platform }: ResultsTableProps) {
+export function ResultsTable({ songs, platform, onEdit, onDelete }: ResultsTableProps) {
   const [playingId, setPlayingId] = useState<string | null>(null)
   const [copiedKey, setCopiedKey] = useState<string | null>(null)
   const [tableCopied, setTableCopied] = useState(false)
+  const [editingId, setEditingId] = useState<string | null>(null)
+  const [editName, setEditName] = useState('')
+  const [editArtist, setEditArtist] = useState('')
   const audioRef = useRef<HTMLAudioElement | null>(null)
+
+  const startEdit = (song: Song) => {
+    setEditingId(song.id)
+    setEditName(trackName(song))
+    setEditArtist(artistName(song))
+  }
+  const cancelEdit = () => setEditingId(null)
+  const saveEdit = (id: string) => {
+    const name = editName.trim()
+    if (name) onEdit(id, name, editArtist.trim())
+    setEditingId(null)
+  }
 
   const stopAudio = () => {
     if (audioRef.current) {
@@ -260,11 +277,40 @@ export function ResultsTable({ songs, platform }: ResultsTableProps) {
 
                   {/* Song */}
                   <td className="px-4 py-3">
-                    <span className="text-foreground font-medium">{trackName(song)}</span>
+                    {editingId === song.id ? (
+                      <input
+                        autoFocus
+                        value={editName}
+                        onChange={(e) => setEditName(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') saveEdit(song.id)
+                          if (e.key === 'Escape') cancelEdit()
+                        }}
+                        placeholder="Song name"
+                        className="w-full rounded border border-border bg-background px-2 py-1 focus:outline-none focus:ring-2 focus:ring-primary/20"
+                      />
+                    ) : (
+                      <span className="text-foreground font-medium">{trackName(song)}</span>
+                    )}
                   </td>
 
                   {/* Artist */}
-                  <td className="px-4 py-3 text-muted-foreground">{artistName(song)}</td>
+                  <td className="px-4 py-3 text-muted-foreground">
+                    {editingId === song.id ? (
+                      <input
+                        value={editArtist}
+                        onChange={(e) => setEditArtist(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') saveEdit(song.id)
+                          if (e.key === 'Escape') cancelEdit()
+                        }}
+                        placeholder="Artist"
+                        className="w-full rounded border border-border bg-background px-2 py-1 text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20"
+                      />
+                    ) : (
+                      artistName(song)
+                    )}
+                  </td>
 
                   {/* Album */}
                   <td className="px-4 py-3 text-muted-foreground">
@@ -274,6 +320,26 @@ export function ResultsTable({ songs, platform }: ResultsTableProps) {
                   {/* Link + copy actions */}
                   <td className="px-4 py-3">
                     <div className="flex items-center justify-end gap-2">
+                      {editingId === song.id ? (
+                        <>
+                          <button
+                            onClick={() => saveEdit(song.id)}
+                            className="inline-flex items-center gap-1.5 rounded-lg bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground transition-opacity hover:opacity-90"
+                            title="Save & re-find links"
+                          >
+                            <Check className="h-3.5 w-3.5" />
+                            Save
+                          </button>
+                          <button
+                            onClick={cancelEdit}
+                            className="rounded-lg p-1.5 text-muted-foreground hover:bg-muted transition-colors"
+                            title="Cancel"
+                          >
+                            <X className="h-4 w-4" />
+                          </button>
+                        </>
+                      ) : (
+                      <>
                       {link ? (
                         <>
                           <a
@@ -318,6 +384,24 @@ export function ResultsTable({ songs, platform }: ResultsTableProps) {
                           <Type className="h-4 w-4" />
                         )}
                       </button>
+
+                      {/* Edit (fix a misread name → re-find links) + delete */}
+                      <button
+                        onClick={() => startEdit(song)}
+                        className="rounded-lg p-1.5 text-muted-foreground hover:bg-primary/10 hover:text-primary transition-colors"
+                        title="Edit song / artist"
+                      >
+                        <Pencil className="h-4 w-4" />
+                      </button>
+                      <button
+                        onClick={() => onDelete(song.id)}
+                        className="rounded-lg p-1.5 text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-colors"
+                        title="Remove song"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </button>
+                      </>
+                      )}
                     </div>
                   </td>
                 </tr>
