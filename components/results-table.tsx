@@ -40,9 +40,11 @@ const trackName = (s: Song) => s.appleTrackName || s.originalName
 const artistName = (s: Song) => s.appleArtist || s.artist
 const albumName = (s: Song) => s.appleAlbum || ''
 
+// Quote the exact title + put the song first so YT Music search stops "did-you-mean"
+// autocorrecting an unusual title into something unrelated.
 const ytMusicUrl = (s: Song) =>
   'https://music.youtube.com/search?q=' +
-  encodeURIComponent(`${artistName(s)} ${trackName(s)}`)
+  encodeURIComponent(`"${trackName(s)}" ${artistName(s)}`)
 
 // Direct track link when the API matched one, else a Spotify search link (no API needed).
 const spotifyUrl = (s: Song) =>
