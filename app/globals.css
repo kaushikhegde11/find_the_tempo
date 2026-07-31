@@ -4,7 +4,7 @@
 @custom-variant dark (&:is(.dark *));
 
 :root {
-  --background: oklch(1 0 0);
+  --background: oklch(0.977 0.004 95);
   --foreground: oklch(0.145 0 0);
   --card: oklch(1 0 0);
   --card-foreground: oklch(0.145 0 0);
@@ -171,5 +171,28 @@
     animation: none;
     opacity: 1;
     transform: none;
+  }
+}
+
+/* Loader scenes: gentle bob + slow spin (transform-only, cheap). */
+@keyframes bob {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-8px);
+  }
+}
+.animate-bob {
+  animation: bob 1.4s ease-in-out infinite;
+}
+.spin-slow {
+  animation: spin 3s linear infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .animate-bob,
+  .spin-slow {
+    animation: none;
   }
 }

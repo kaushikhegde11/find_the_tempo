@@ -131,9 +131,9 @@ export default function ResultsPage() {
       <section className="mx-auto max-w-6xl px-6 py-16 sm:px-8 sm:py-24">
         <div className="space-y-8">
           {/* Header */}
-          <div className="space-y-2">
+          <div className="space-y-2 text-center">
             <h1 className="text-3xl font-bold text-foreground sm:text-4xl">Your songs</h1>
-            <p className="text-muted-foreground">
+            <p className="mx-auto max-w-2xl text-muted-foreground">
               Preview each track, open it on your service, then add the ones you want to any playlist yourself.
               Something misread? Edit a row to fix its links.
             </p>

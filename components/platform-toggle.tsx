@@ -17,7 +17,7 @@ const OPTIONS: { key: Platform; label: string; activeBg: string }[] = [
 
 export function PlatformToggle({ value, onChange }: PlatformToggleProps) {
   return (
-    <div className="inline-flex rounded-full bg-muted p-1 select-none">
+    <div className="inline-flex rounded-full bg-neutral-900 p-1 select-none">
       {OPTIONS.map((opt) => {
         const active = value === opt.key
         return (
@@ -29,7 +29,7 @@ export function PlatformToggle({ value, onChange }: PlatformToggleProps) {
               'rounded-full px-5 py-1.5 text-sm font-medium transition-colors',
               active
                 ? cn(opt.activeBg, 'text-white shadow-sm')
-                : 'text-muted-foreground hover:text-foreground'
+                : 'text-neutral-400 hover:text-white'
             )}
           >
             {opt.label}

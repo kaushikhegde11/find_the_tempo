@@ -106,24 +106,18 @@ export function ResultsTable({ songs, platform, onEdit, onDelete }: ResultsTable
     })
   }
 
-  // Tab-separated table (pastes into Notion / Sheets as a real table).
-  const buildTsv = () => {
-    const header = ['Song', 'Artist', 'Album', 'Apple Music', 'Spotify', 'YouTube Music'].join('\t')
-    const rows = songs.map((s) =>
-      [
-        trackName(s),
-        artistName(s),
-        albumName(s),
-        s.appleMusicUrl || '',
-        spotifyUrl(s),
-        ytMusicUrl(s),
-      ].join('\t')
-    )
-    return [header, ...rows].join('\n')
+  // Plain readable list for the SELECTED service: service title, then
+  // "<track> by <artist> — <link>" per song.
+  const buildList = () => {
+    const lines = songs.map((s) => {
+      const link = linkFor(s, platform)
+      return `${trackName(s)} by ${artistName(s)}${link ? ` — ${link}` : ''}`
+    })
+    return [`${SERVICE_NAME[platform]}`, '', ...lines].join('\n')
   }
 
   const copyTable = () => {
-    navigator.clipboard.writeText(buildTsv()).then(() => {
+    navigator.clipboard.writeText(buildList()).then(() => {
       setTableCopied(true)
       setTimeout(() => setTableCopied(false), 1500)
     })

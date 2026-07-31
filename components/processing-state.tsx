@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import { CheckCircle2, Loader2, FileImage, Zap, Search } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { MusicLoader } from '@/components/music-loader'
 
 interface ProcessingStage {
   id: 'reading' | 'detecting' | 'matching'
@@ -54,6 +55,13 @@ export function ProcessingState({
 
   return (
     <div className="w-full space-y-8 animate-fade-in">
+      {/* Cycling music-themed animations while OCR runs */}
+      {isProcessing && (
+        <div className="mb-2 border-b border-border/50 pb-6">
+          <MusicLoader />
+        </div>
+      )}
+
       {stages.map((stage, index) => (
         <div key={stage.id} className="flex items-start gap-4">
           <div className="pt-0.5">
