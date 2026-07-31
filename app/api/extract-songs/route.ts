@@ -1,7 +1,58 @@
 import { NextRequest, NextResponse } from 'next/server'
 
 const OPENROUTER_API_URL = 'https://openrouter.ai/api/v1/chat/completions'
-const QWEN_MODEL = process.env.QWEN_MODEL || 'qwen/qwen3-vl-30b-a3b-instruct'
+// Vision model for reading the screenshot. Gemini 2.5 Flash is served by a single
+// fast provider (~4s, consistent) — Qwen on OpenRouter routes to varied providers
+// whose latency swings past serverless timeouts.
+const VISION_MODEL = process.env.QWEN_MODEL || 'google/gemini-2.5-flash'
+
+type RawSong = { name: string; artist: string; confidence: number }
+
+/**
+ * Tolerantly parse the model's reply into a songs array.
+ * Handles code fences, stray prose, raw control characters, and truncated
+ * output (a reply cut off mid-array still yields the complete song objects).
+ * Returns null only when nothing usable can be recovered.
+ */
+function parseSongs(raw: string): RawSong[] | null {
+  if (!raw) return null
+
+  // Drop a ```json … ``` fence and isolate the outer JSON object.
+  let text = raw.replace(/```(?:json)?/gi, '').trim()
+  const start = text.indexOf('{')
+  const end = text.lastIndexOf('}')
+  if (start !== -1 && end > start) text = text.slice(start, end + 1)
+
+  // Escape raw control chars (literal newlines/tabs inside strings break JSON.parse).
+  const cleaned = text.replace(/[\u0000-\u001F]+/g, ' ')
+
+  // 1) Straight parse.
+  try {
+    const obj = JSON.parse(cleaned)
+    if (Array.isArray(obj?.songs)) return obj.songs
+  } catch {
+    /* fall through to salvage */
+  }
+
+  // 2) Salvage: pull every complete { … } song object, even if the array was truncated.
+  const objects = cleaned.match(/\{[^{}]*\}/g)
+  if (objects) {
+    const songs: RawSong[] = []
+    for (const o of objects) {
+      try {
+        const s = JSON.parse(o)
+        if (s && typeof s.name === 'string') {
+          songs.push({ name: s.name, artist: s.artist ?? 'Unknown Artist', confidence: s.confidence ?? 0.75 })
+        }
+      } catch {
+        /* skip malformed fragment */
+      }
+    }
+    if (songs.length > 0) return songs
+  }
+
+  return null
+}
 
 const PROMPT = `You are a music recognition assistant. Look at this screenshot from a music app (Spotify, Apple Music, YouTube Music, etc.) or any image showing a song list.
 
@@ -58,7 +109,7 @@ export async function POST(req: NextRequest) {
         'X-Title': 'Screenshot to Playlist',
       },
       body: JSON.stringify({
-        model: QWEN_MODEL,
+        model: VISION_MODEL,
         messages: [
           {
             role: 'user',
@@ -75,7 +126,7 @@ export async function POST(req: NextRequest) {
           },
         ],
         temperature: 0.1,
-        max_tokens: 1024,
+        max_tokens: 4096,
         response_format: { type: 'json_object' },
       }),
       signal: AbortSignal.timeout(25_000),
@@ -93,19 +144,13 @@ export async function POST(req: NextRequest) {
     const data = await res.json()
     const rawContent: string = data.choices?.[0]?.message?.content ?? ''
 
-    let result: { songs: Array<{ name: string; artist: string; confidence: number }> }
-    try {
-      result = JSON.parse(rawContent)
-    } catch {
-      const match = rawContent.match(/\{[\s\S]*"songs"[\s\S]*\}/)
-      if (!match) {
-        console.error('[Qwen/OpenRouter] Unparseable response:', rawContent)
-        return NextResponse.json({ error: 'Model returned unreadable output' }, { status: 500 })
-      }
-      result = JSON.parse(match[0])
+    const parsed = parseSongs(rawContent)
+    if (parsed === null) {
+      console.error('[Qwen/OpenRouter] Unparseable response:', rawContent)
+      return NextResponse.json({ error: 'Model returned unreadable output' }, { status: 500 })
     }
 
-    const songs = (result.songs ?? []).filter(
+    const songs = parsed.filter(
       (s) => s.name && typeof s.name === 'string' && s.name.trim().length > 0
     )
 

@@ -2,7 +2,7 @@ import { Song } from './types'
 
 /**
  * Extracts songs from a screenshot by sending the image to the
- * /api/extract-songs Next.js API route, which runs a Python OCR script.
+ * /api/extract-songs Next.js API route, which reads the image with a vision model.
  */
 export async function extractSongsFromScreenshot(imageFile: File): Promise<Song[]> {
   console.log('[OCR] Processing image:', imageFile.name)
@@ -27,7 +27,7 @@ export async function extractSongsFromScreenshot(imageFile: File): Promise<Song[
     return []
   }
 
-  // Map Python script output to our Song type
+  // Map extraction output to our Song type
   const songs: Song[] = data.songs.map((s: any, index: number) => ({
     id: `ocr-${Date.now()}-${index}`,
     originalName: s.name,
