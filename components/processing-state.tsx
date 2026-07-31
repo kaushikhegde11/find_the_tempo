@@ -92,8 +92,8 @@ export function ProcessingState({
               {stage.label}
             </p>
             {index === displayStage && (
-              <div className="mt-1 h-1 w-12 overflow-hidden rounded-full bg-muted">
-                <div className="h-full w-full animate-pulse bg-primary" />
+              <div className="mt-1.5 h-1 w-40 overflow-hidden rounded-full bg-muted">
+                <div className="progress-slide h-full w-1/3 rounded-full bg-primary" />
               </div>
             )}
           </div>

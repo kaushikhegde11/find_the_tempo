@@ -74,7 +74,7 @@ export default function UploadPage() {
         <div className="mx-auto max-w-6xl px-6 py-4 sm:px-8">
           <Link
             href="/"
-            className="inline-flex items-center gap-2 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+            className="te-key te-key--light te-key--sm inline-flex items-center gap-2 rounded-md bg-card px-3 py-1.5 font-mono text-xs font-semibold uppercase tracking-wide text-foreground"
           >
             <ArrowLeft className="h-4 w-4" />
             Back to Home

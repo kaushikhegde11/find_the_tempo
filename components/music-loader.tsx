@@ -1,48 +1,71 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { Disc3, Music, Music2, Music4, AudioLines, Headphones, Radio } from 'lucide-react'
 
-/** A row of animated equalizer bars (reuses the .eq-bar keyframe). */
-function Equalizer({ count = 5 }: { count?: number }) {
+/** Pixel equalizer — chunky square bars rising in discrete steps. */
+function PixelEqualizer() {
+  const bars = 5
   return (
-    <div className="flex h-16 items-end gap-1.5">
-      {Array.from({ length: count }).map((_, i) => (
+    <div className="flex h-14 items-end gap-1.5">
+      {Array.from({ length: bars }).map((_, i) => (
         <span
           key={i}
-          className="eq-bar w-2 rounded-full bg-foreground"
-          style={{ height: '100%', animationDelay: `${(i % count) * 0.13}s` }}
+          className="px-bar w-3 bg-foreground"
+          style={{ height: '100%', animationDelay: `${(i % bars) * 0.12}s` }}
         />
       ))}
     </div>
   )
 }
 
-// 6 music-themed scenes, shown 3s each, then it loops.
+/** Pixel ring — 8 square pixels blinking around a loop. */
+function PixelRing() {
+  const cells = [
+    [0, 0], [1, 0], [2, 0],
+    [2, 1],
+    [2, 2], [1, 2], [0, 2],
+    [0, 1],
+  ]
+  return (
+    <div className="grid h-14 w-14 grid-cols-3 grid-rows-3 gap-1.5">
+      {Array.from({ length: 9 }).map((_, idx) => {
+        const col = idx % 3
+        const row = Math.floor(idx / 3)
+        const ringIndex = cells.findIndex(([c, r]) => c === col && r === row)
+        if (ringIndex === -1) return <span key={idx} />
+        return (
+          <span
+            key={idx}
+            className="px-dot bg-foreground"
+            style={{ animationDelay: `${ringIndex * 0.12}s` }}
+          />
+        )
+      })}
+    </div>
+  )
+}
+
+/** Pixel progress — a row of square pixels filling left→right. */
+function PixelProgress() {
+  const count = 8
+  return (
+    <div className="flex h-14 items-center gap-1.5">
+      {Array.from({ length: count }).map((_, i) => (
+        <span
+          key={i}
+          className="px-dot h-3.5 w-3.5 bg-foreground"
+          style={{ animationDelay: `${i * 0.1}s` }}
+        />
+      ))}
+    </div>
+  )
+}
+
+// 3 pixel scenes, 3s each, looping.
 const SCENES: { node: React.ReactNode; caption: string }[] = [
-  { node: <Equalizer count={5} />, caption: 'Reading the vibes…' },
-  { node: <Disc3 className="h-16 w-16 spin-slow text-foreground" strokeWidth={1.5} />, caption: 'Spinning the record…' },
-  {
-    node: (
-      <div className="flex items-end gap-2">
-        <Music className="h-10 w-10 animate-bob text-foreground" style={{ animationDelay: '0s' }} />
-        <Music2 className="h-12 w-12 animate-bob text-foreground" style={{ animationDelay: '0.2s' }} />
-        <Music4 className="h-10 w-10 animate-bob text-foreground" style={{ animationDelay: '0.4s' }} />
-      </div>
-    ),
-    caption: 'Catching the melody…',
-  },
-  { node: <AudioLines className="h-16 w-16 animate-pulse text-foreground" strokeWidth={1.5} />, caption: 'Listening closely…' },
-  {
-    node: (
-      <div className="relative flex h-16 w-16 items-center justify-center">
-        <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-foreground/20" />
-        <Headphones className="relative h-14 w-14 text-foreground" strokeWidth={1.5} />
-      </div>
-    ),
-    caption: 'Feeling the beat…',
-  },
-  { node: <Radio className="h-16 w-16 animate-bob text-foreground" strokeWidth={1.5} />, caption: 'Tuning in…' },
+  { node: <PixelEqualizer />, caption: 'reading the vibes…' },
+  { node: <PixelRing />, caption: 'detecting songs…' },
+  { node: <PixelProgress />, caption: 'finding links…' },
 ]
 
 export function MusicLoader() {
@@ -57,11 +80,13 @@ export function MusicLoader() {
 
   return (
     <div className="flex flex-col items-center justify-center gap-5 py-6">
-      {/* key restarts the fade-in on each scene change */}
-      <div key={scene} className="flex h-16 items-center justify-center animate-fade-in">
+      <div key={scene} className="flex h-14 items-center justify-center animate-fade-in">
         {current.node}
       </div>
-      <p key={`c-${scene}`} className="animate-fade-in text-sm font-medium text-muted-foreground">
+      <p
+        key={`c-${scene}`}
+        className="animate-fade-in font-mono text-xs uppercase tracking-wider text-muted-foreground"
+      >
         {current.caption}
       </p>
     </div>

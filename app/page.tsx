@@ -1,128 +1,195 @@
 'use client'
 
 import Link from 'next/link'
-import { ArrowRight, ImageUp, ScanLine, Link2 } from 'lucide-react'
+import { ArrowRight, ImageUp, ScanLine, Link2, Instagram, Music, Newspaper } from 'lucide-react'
 
 const STEPS = [
-  { icon: ImageUp, label: 'Upload screenshot', hint: 'Any tracklist image' },
-  { icon: ScanLine, label: 'Detect songs', hint: 'Names & artists, read for you' },
-  { icon: Link2, label: 'Get links', hint: 'Apple · Spotify · YouTube' },
+  { n: '01', icon: ImageUp, label: 'Upload screenshot', hint: 'any tracklist image' },
+  { n: '02', icon: ScanLine, label: 'Detect songs', hint: 'names & artists, read for you' },
+  { n: '03', icon: Link2, label: 'Get links', hint: 'apple · spotify · youtube' },
 ]
 
-const WORDMARK = 'Find the tempo'
-
-// A few live equalizer bars — the wordmark's "tempo" made visible.
-function EqualizerGlyph({ className = '', bars = 4 }: { className?: string; bars?: number }) {
-  return (
-    <span className={`inline-flex items-end gap-[3px] ${className}`} aria-hidden>
-      {Array.from({ length: bars }).map((_, i) => (
-        <span
-          key={i}
-          className="eq-bar w-[3px] rounded-full bg-current"
-          style={{ height: '100%', animationDelay: `${(i % bars) * 0.15}s` }}
-        />
-      ))}
-    </span>
-  )
+// Small filled square used as a grid node marker.
+function Node({ className = '' }: { className?: string }) {
+  return <span className={`te-node ${className}`} aria-hidden />
 }
 
 export default function LandingPage() {
   return (
-    <main className="flex min-h-screen flex-col bg-gradient-to-b from-background to-muted/30">
-      {/* Nav — centered animated wordmark */}
-      <nav className="border-b border-border/50 bg-background/80 backdrop-blur-sm">
-        <div className="mx-auto max-w-6xl px-6 py-4 sm:px-8">
-          <div className="flex items-center justify-center gap-2.5">
-            <EqualizerGlyph className="h-4 text-foreground" />
-            <span className="text-lg font-bold tracking-tight text-foreground">
-              {WORDMARK.split('').map((ch, i) => (
-                <span
-                  key={i}
-                  className="tempo-letter"
-                  style={{ animationDelay: `${i * 0.04}s` }}
-                >
-                  {ch === ' ' ? ' ' : ch}
-                </span>
-              ))}
-            </span>
-          </div>
+    <main className="flex min-h-screen flex-col bg-background text-foreground">
+      {/* Nav — product-tag wordmark with status LED */}
+      <nav className="border-b border-border">
+        <div className="mx-auto flex max-w-6xl items-center justify-center px-6 py-4 sm:px-8">
+          <span className="inline-flex items-center gap-2 rounded border border-foreground/80 px-3 py-1.5 font-mono text-xs font-medium uppercase tracking-[0.18em]">
+            <span className="h-2 w-2 rounded-full bg-primary animate-pulse" />
+            find the tempo
+            <span className="text-muted-foreground">/ ft-1</span>
+          </span>
         </div>
       </nav>
 
-      {/* Hero — fills the first viewport, steps pinned to the bottom */}
-      <section className="mx-auto flex w-full max-w-5xl flex-1 flex-col px-6 sm:px-8">
-        <div className="flex flex-1 flex-col items-center justify-center py-16 text-center">
-          <div className="max-w-3xl space-y-6 animate-slide-up">
-            <h1 className="text-balance text-4xl font-bold tracking-tight text-foreground sm:text-6xl">
-              Convert screenshots into findable links
-            </h1>
-            <p className="mx-auto max-w-xl text-lg text-muted-foreground">
-              Upload a screenshot of any tracklist. Get every song as a ready to use link on
-              Apple Music, Spotify, and YouTube Music.
-            </p>
-            <div className="pt-4">
-              <Link
-                href="/upload"
-                className="inline-flex items-center justify-center gap-2 rounded-lg bg-primary px-8 py-3 text-sm font-medium text-primary-foreground transition-opacity hover:opacity-90"
-              >
-                Upload a screenshot
-                <ArrowRight className="h-4 w-4" />
-              </Link>
+      {/* Hero — device faceplate on a blueprint grid */}
+      <section className="mx-auto w-full max-w-5xl flex-1 px-4 py-4 sm:px-8">
+        <div className="overflow-hidden rounded-lg border border-border bg-card shadow-sm">
+          {/* Faceplate header strip */}
+          <div className="flex items-center justify-between border-b border-border px-4 py-2 font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground sm:px-6">
+            <span>tracklist scanner</span>
+            <span className="flex items-center gap-1.5">
+              <span className="h-1.5 w-1.5 rounded-full bg-primary" />
+              <span className="h-1.5 w-1.5 rounded-full bg-foreground/25" />
+              <span className="h-1.5 w-1.5 rounded-full bg-foreground/25" />
+            </span>
+          </div>
+
+          {/* Hero body — blueprint canvas */}
+          <div className="relative te-dotgrid px-6 py-6 text-center sm:px-10">
+            {/* corner nodes */}
+            <Node className="absolute left-3 top-3" />
+            <Node className="absolute right-3 top-3" />
+            <Node className="absolute bottom-3 left-3" />
+            <Node className="absolute bottom-3 right-3" />
+            {/* coordinate readouts */}
+            <span className="absolute left-4 top-4 font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
+              scr-01
+            </span>
+            <span className="absolute bottom-4 right-4 font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
+              x:1080 · y:1920
+            </span>
+
+            <div className="relative mx-auto max-w-3xl">
+              <p className="mb-4 font-mono text-xs uppercase tracking-[0.25em] text-primary">
+                screenshot → links
+              </p>
+              <h1 className="text-balance text-4xl font-bold tracking-tight sm:text-6xl">
+                Convert screenshots into findable links
+              </h1>
+              <p className="mx-auto mt-5 max-w-xl font-mono text-sm leading-relaxed text-muted-foreground">
+                Upload a screenshot of any tracklist. Get every song as a ready to use link on
+                Apple Music, Spotify, and YouTube Music.
+              </p>
+              <div className="mt-8">
+                <Link
+                  href="/upload"
+                  className="te-key inline-flex items-center justify-center gap-2 rounded-md bg-primary px-8 py-3.5 font-mono text-sm font-semibold uppercase tracking-wider text-primary-foreground"
+                >
+                  Upload a screenshot
+                  <ArrowRight className="h-4 w-4" />
+                </Link>
+              </div>
             </div>
           </div>
-        </div>
 
-        {/* How it works — minimalist arrowed step strip at the bottom of the view */}
-        <div className="pb-10">
-          <p className="mb-5 text-center text-xs font-medium uppercase tracking-[0.2em] text-muted-foreground">
-            How it works
-          </p>
-          <ol className="flex flex-col items-stretch justify-center gap-3 sm:flex-row sm:items-center">
-            {STEPS.map((step, i) => {
+          {/* Steps — BLCK-style numbered grid */}
+          <div className="grid grid-cols-1 divide-y divide-border border-t border-border sm:grid-cols-3 sm:divide-x sm:divide-y-0">
+            {STEPS.map((step) => {
               const Icon = step.icon
               return (
-                <li key={step.label} className="contents">
-                  <div className="flex items-center gap-3 rounded-xl border border-border/60 bg-background/60 px-4 py-3 sm:flex-col sm:gap-2 sm:px-6 sm:text-center">
-                    <span className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg bg-muted text-foreground">
-                      <Icon className="h-5 w-5" />
-                    </span>
-                    <div className="min-w-0">
-                      <div className="text-sm font-semibold text-foreground">{step.label}</div>
-                      <div className="text-xs text-muted-foreground">{step.hint}</div>
+                <div key={step.n} className="relative flex flex-col gap-4 px-5 py-6">
+                  <Node className="absolute right-3 top-3" />
+                  <div className="flex items-center justify-between font-mono text-xs uppercase tracking-widest text-muted-foreground">
+                    <span>blck. {step.n}</span>
+                  </div>
+                  <span className="flex h-9 w-9 items-center justify-center rounded border border-border bg-background">
+                    <Icon className="h-5 w-5" strokeWidth={2} />
+                  </span>
+                  <div>
+                    <div className="text-sm font-semibold">{step.label}</div>
+                    <div className="font-mono text-[11px] uppercase tracking-wide text-muted-foreground">
+                      {step.hint}
                     </div>
                   </div>
-                  {i < STEPS.length - 1 && (
-                    <ArrowRight className="mx-auto h-4 w-4 flex-shrink-0 rotate-90 text-muted-foreground/50 sm:rotate-0" />
-                  )}
-                </li>
+                </div>
               )
             })}
-          </ol>
+          </div>
         </div>
       </section>
 
-      {/* Footer — animated equalizer baseline (CSS transforms only) */}
-      <footer className="relative overflow-hidden border-t border-border/50 bg-muted/30">
-        <div
-          className="pointer-events-none absolute inset-x-0 bottom-0 flex h-16 items-end justify-center gap-[4px] px-4 opacity-40"
-          aria-hidden
-        >
-          {Array.from({ length: 48 }).map((_, i) => (
-            <span
-              key={i}
-              className="eq-bar w-[4px] flex-shrink rounded-t-sm bg-foreground/60"
-              style={{
-                height: '100%',
-                animationDelay: `${(i % 12) * 0.09}s`,
-                animationDuration: `${1 + (i % 5) * 0.12}s`,
-              }}
-            />
-          ))}
+      {/* Footer — structured orange block */}
+      <footer className="bg-primary text-black">
+        {/* link columns */}
+        <div className="grid grid-cols-1 divide-y divide-black/20 border-y border-black/20 sm:grid-cols-3 sm:divide-x sm:divide-y-0">
+          {/* BLCK.01 — wordmark contained in the box */}
+          <div className="relative flex flex-col overflow-hidden px-5 py-4">
+            <Node className="absolute right-3 top-4 !bg-black" />
+            <div className="mb-3 font-mono text-xs font-semibold uppercase tracking-widest">
+              blck. 01
+            </div>
+            <span className="block break-words font-bold leading-[0.85] tracking-tighter text-[clamp(1.75rem,5vw,3rem)]">
+              find the tempo
+            </span>
+          </div>
+
+          <FooterCol code="blck. 02" title="Follow">
+            <FooterLink href="https://music.apple.com/profile/musicforkaey" icon={<Music className="h-4 w-4" />}>
+              Apple Music
+            </FooterLink>
+            <FooterLink
+              href="https://substack.com/@kaeywrites?r=6tdkpy&utm_campaign=profile&utm_medium=profile-page"
+              icon={<Newspaper className="h-4 w-4" />}
+            >
+              Substack
+            </FooterLink>
+            <FooterLink href="https://www.instagram.com/artofkaey/" icon={<Instagram className="h-4 w-4" />}>
+              Instagram
+            </FooterLink>
+          </FooterCol>
+
+          <FooterCol code="blck. 03" title="System">
+            <p className="font-mono text-xs leading-relaxed text-black/70">
+              apple music · spotify · youtube music. no login.
+            </p>
+          </FooterCol>
         </div>
-        <div className="relative mx-auto max-w-6xl px-6 py-8 sm:px-8">
-          <p className="text-center text-sm text-muted-foreground">© 2026 Find the tempo</p>
+
+        {/* Bottom bar */}
+        <div className="flex flex-wrap items-center justify-between gap-2 border-t border-black/20 px-4 py-2 font-mono text-[11px] uppercase tracking-[0.15em] sm:px-6">
+          <span>© 2026 find the tempo</span>
+          <span className="text-black/60">screenshot → links</span>
         </div>
       </footer>
     </main>
+  )
+}
+
+function FooterCol({
+  code,
+  title,
+  children,
+}: {
+  code: string
+  title: string
+  children: React.ReactNode
+}) {
+  return (
+    <div className="relative px-5 py-4">
+      <Node className="absolute right-3 top-4 !bg-black" />
+      <div className="mb-3 font-mono text-xs font-semibold uppercase tracking-widest">{code}</div>
+      <div className="mb-3 text-lg font-bold">{title}</div>
+      <div className="flex flex-col items-start gap-2">{children}</div>
+    </div>
+  )
+}
+
+// Social links as small physical keys.
+function FooterLink({
+  href,
+  children,
+  icon,
+}: {
+  href: string
+  children: React.ReactNode
+  icon?: React.ReactNode
+}) {
+  return (
+    <a
+      href={href}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="te-key te-key--light te-key--sm inline-flex w-48 items-center justify-center gap-2 rounded-md bg-card px-3 py-1.5 text-center font-mono text-xs font-semibold uppercase tracking-wide text-foreground"
+    >
+      {icon}
+      {children}
+    </a>
   )
 }

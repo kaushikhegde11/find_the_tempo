@@ -119,7 +119,7 @@ export default function ResultsPage() {
         <div className="mx-auto max-w-6xl px-6 py-4 sm:px-8">
           <Link
             href="/upload"
-            className="inline-flex items-center gap-2 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+            className="te-key te-key--light te-key--sm inline-flex items-center gap-2 rounded-md bg-card px-3 py-1.5 font-mono text-xs font-semibold uppercase tracking-wide text-foreground"
           >
             <ArrowLeft className="h-4 w-4" />
             Upload another
@@ -132,7 +132,7 @@ export default function ResultsPage() {
         <div className="space-y-8">
           {/* Header */}
           <div className="space-y-2 text-center">
-            <h1 className="text-3xl font-bold text-foreground sm:text-4xl">Your songs</h1>
+            <h1 className="text-3xl font-bold text-foreground sm:text-4xl">Your song links</h1>
             <p className="mx-auto max-w-2xl text-muted-foreground">
               Preview each track, open it on your service, then add the ones you want to any playlist yourself.
               Something misread? Edit a row to fix its links.

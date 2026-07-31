@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback, useState } from 'react'
+import { useCallback, useRef, useState } from 'react'
 import { Cloud, Upload } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
@@ -16,6 +16,7 @@ export function UploadZone({
   disabled = false,
 }: UploadZoneProps) {
   const [isDragActive, setIsDragActive] = useState(false)
+  const inputRef = useRef<HTMLInputElement>(null)
 
   const handleDrag = useCallback(
     (e: React.DragEvent<HTMLDivElement>) => {
@@ -73,12 +74,13 @@ export function UploadZone({
       )}
     >
       <input
+        ref={inputRef}
         type="file"
         multiple
         accept="image/png,image/jpeg,image/webp"
         onChange={handleChange}
         disabled={disabled || isProcessing}
-        className="absolute inset-0 cursor-pointer opacity-0"
+        className="absolute inset-0 z-0 cursor-pointer opacity-0"
       />
 
       <div className="flex flex-col items-center gap-4">
@@ -100,9 +102,11 @@ export function UploadZone({
         </div>
 
         <button
+          type="button"
           disabled={disabled || isProcessing}
+          onClick={() => inputRef.current?.click()}
           className={cn(
-            'mt-4 inline-flex items-center gap-2 rounded-lg bg-primary px-6 py-2 text-sm font-medium text-primary-foreground transition-opacity hover:opacity-90 disabled:opacity-50',
+            'te-key relative z-10 mt-4 inline-flex items-center gap-2 rounded-md bg-primary px-6 py-2.5 font-mono text-sm font-semibold uppercase tracking-wider text-primary-foreground disabled:opacity-50',
             (disabled || isProcessing) && 'cursor-not-allowed'
           )}
         >

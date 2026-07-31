@@ -12,6 +12,16 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog'
 
 interface ResultsTableProps {
   songs: Song[]
@@ -60,6 +70,7 @@ export function ResultsTable({ songs, platform, onEdit, onDelete }: ResultsTable
   const [editingId, setEditingId] = useState<string | null>(null)
   const [editName, setEditName] = useState('')
   const [editArtist, setEditArtist] = useState('')
+  const [confirmSong, setConfirmSong] = useState<Song | null>(null)
   const audioRef = useRef<HTMLAudioElement | null>(null)
 
   const startEdit = (song: Song) => {
@@ -149,27 +160,25 @@ export function ResultsTable({ songs, platform, onEdit, onDelete }: ResultsTable
 
   return (
     <div className="space-y-4 animate-fade-in">
-      {/* Toolbar */}
-      <div className="flex justify-end gap-2">
-        <button
-          onClick={copyTable}
-          className="inline-flex items-center gap-2 rounded-lg border border-border bg-background px-3 py-1.5 text-sm font-medium text-foreground transition-colors hover:bg-muted"
-          title="Copy the whole table (paste into Notion or Sheets)"
-        >
-          {tableCopied ? <Check className="h-4 w-4 text-green-500" /> : <Table className="h-4 w-4" />}
-          {tableCopied ? 'Copied' : 'Copy table'}
-        </button>
+      {/* Toolbar — one segmented housing (copy + share) */}
+      <div className="flex justify-end">
+        <div className="te-segment te-segment--light bg-card font-mono text-xs font-semibold uppercase tracking-wide text-foreground">
+          <button
+            onClick={copyTable}
+            className="te-seg-key px-3 py-1.5"
+            title="Copy the whole list (paste into Notion or Sheets)"
+          >
+            {tableCopied ? <Check className="h-4 w-4 text-green-500" /> : <Table className="h-4 w-4" />}
+            {tableCopied ? 'Copied' : 'Copy list'}
+          </button>
 
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <button
-              className="inline-flex items-center gap-2 rounded-lg border border-border bg-background px-3 py-1.5 text-sm font-medium text-foreground transition-colors hover:bg-muted"
-              title="Share this list"
-            >
-              <Share2 className="h-4 w-4" />
-              Share
-            </button>
-          </DropdownMenuTrigger>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button className="te-seg-key px-3 py-1.5" title="Share this list">
+                <Share2 className="h-4 w-4" />
+                Share
+              </button>
+            </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-48">
             {canNativeShare && (
               <>
@@ -212,7 +221,8 @@ export function ResultsTable({ songs, platform, onEdit, onDelete }: ResultsTable
               Copy for Notion / Sheets
             </DropdownMenuItem>
           </DropdownMenuContent>
-        </DropdownMenu>
+          </DropdownMenu>
+        </div>
       </div>
 
       <div className="overflow-x-auto rounded-lg border border-border">
@@ -318,7 +328,7 @@ export function ResultsTable({ songs, platform, onEdit, onDelete }: ResultsTable
                         <>
                           <button
                             onClick={() => saveEdit(song.id)}
-                            className="inline-flex items-center gap-1.5 rounded-lg bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground transition-opacity hover:opacity-90"
+                            className="te-key te-key--sm inline-flex items-center gap-1.5 rounded-md bg-primary px-3 py-1.5 font-mono text-xs font-semibold uppercase tracking-wide text-primary-foreground"
                             title="Save & re-find links"
                           >
                             <Check className="h-3.5 w-3.5" />
@@ -335,20 +345,28 @@ export function ResultsTable({ songs, platform, onEdit, onDelete }: ResultsTable
                       ) : (
                       <>
                       {link ? (
-                        <>
-                          <a
-                            href={link}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="inline-flex items-center gap-1.5 rounded-lg bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground transition-opacity hover:opacity-90"
-                            title={`Open in ${SERVICE_NAME[platform]}`}
-                          >
-                            Listen
-                            <ExternalLink className="h-3.5 w-3.5" />
-                          </a>
+                        <a
+                          href={link}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="te-key te-key--sm inline-flex items-center gap-1.5 rounded-md bg-primary px-3 py-1.5 font-mono text-xs font-semibold uppercase tracking-wide text-primary-foreground"
+                          title={`Open in ${SERVICE_NAME[platform]}`}
+                        >
+                          Listen
+                          <ExternalLink className="h-3.5 w-3.5" />
+                        </a>
+                      ) : (
+                        <span className="text-xs text-muted-foreground/60">
+                          Not found on {SERVICE_NAME[platform]}
+                        </span>
+                      )}
+
+                      {/* Icon actions — one segmented housing (single body, seams) */}
+                      <div className="te-segment te-segment--light bg-card text-muted-foreground">
+                        {link && (
                           <button
                             onClick={() => copy(`${song.id}:link`, link)}
-                            className="rounded-lg p-1.5 text-muted-foreground hover:bg-primary/10 hover:text-primary transition-colors"
+                            className="te-seg-key p-2"
                             title="Copy link"
                           >
                             {copiedKey === `${song.id}:link` ? (
@@ -357,43 +375,35 @@ export function ResultsTable({ songs, platform, onEdit, onDelete }: ResultsTable
                               <Copy className="h-4 w-4" />
                             )}
                           </button>
-                        </>
-                      ) : (
-                        <span className="text-xs text-muted-foreground/60">
-                          Not found on {SERVICE_NAME[platform]}
-                        </span>
-                      )}
-
-                      {/* Always available: copy artist + track combined */}
-                      <button
-                        onClick={() =>
-                          copy(`${song.id}:combo`, `${artistName(song)} ${trackName(song)}`)
-                        }
-                        className="rounded-lg p-1.5 text-muted-foreground hover:bg-primary/10 hover:text-primary transition-colors"
-                        title="Copy artist + track"
-                      >
-                        {copiedKey === `${song.id}:combo` ? (
-                          <Check className="h-4 w-4 text-green-500" />
-                        ) : (
-                          <Type className="h-4 w-4" />
                         )}
-                      </button>
-
-                      {/* Edit (fix a misread name → re-find links) + delete */}
-                      <button
-                        onClick={() => startEdit(song)}
-                        className="rounded-lg p-1.5 text-muted-foreground hover:bg-primary/10 hover:text-primary transition-colors"
-                        title="Edit song / artist"
-                      >
-                        <Pencil className="h-4 w-4" />
-                      </button>
-                      <button
-                        onClick={() => onDelete(song.id)}
-                        className="rounded-lg p-1.5 text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-colors"
-                        title="Remove song"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </button>
+                        <button
+                          onClick={() =>
+                            copy(`${song.id}:combo`, `${artistName(song)} ${trackName(song)}`)
+                          }
+                          className="te-seg-key p-2"
+                          title="Copy artist + track"
+                        >
+                          {copiedKey === `${song.id}:combo` ? (
+                            <Check className="h-4 w-4 text-green-500" />
+                          ) : (
+                            <Type className="h-4 w-4" />
+                          )}
+                        </button>
+                        <button
+                          onClick={() => startEdit(song)}
+                          className="te-seg-key p-2"
+                          title="Edit song / artist"
+                        >
+                          <Pencil className="h-4 w-4" />
+                        </button>
+                        <button
+                          onClick={() => setConfirmSong(song)}
+                          className="te-seg-key p-2 hover:!text-destructive"
+                          title="Remove song"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      </div>
                       </>
                       )}
                     </div>
@@ -414,6 +424,32 @@ export function ResultsTable({ songs, platform, onEdit, onDelete }: ResultsTable
           {foundCount}/{songs.length} on {SERVICE_NAME[platform]}
         </span>
       </div>
+
+      {/* Delete confirmation */}
+      <AlertDialog open={!!confirmSong} onOpenChange={(open) => !open && setConfirmSong(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Remove this song?</AlertDialogTitle>
+            <AlertDialogDescription>
+              {confirmSong
+                ? `"${trackName(confirmSong)}" by ${artistName(confirmSong)} will be removed from the list.`
+                : ''}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                if (confirmSong) onDelete(confirmSong.id)
+                setConfirmSong(null)
+              }}
+              className="te-key te-key--sm rounded-md bg-destructive font-mono text-xs font-semibold uppercase tracking-wide text-white"
+            >
+              Remove
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   )
 }
