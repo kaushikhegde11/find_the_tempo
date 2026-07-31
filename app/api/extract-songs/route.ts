@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 
 const OPENROUTER_API_URL = 'https://openrouter.ai/api/v1/chat/completions'
-const QWEN_MODEL = process.env.QWEN_MODEL || 'qwen/qwen3-vl-8b-instruct'
+const QWEN_MODEL = process.env.QWEN_MODEL || 'qwen/qwen3-vl-30b-a3b-instruct'
 
 const PROMPT = `You are a music recognition assistant. Look at this screenshot from a music app (Spotify, Apple Music, YouTube Music, etc.) or any image showing a song list.
 
@@ -78,7 +78,7 @@ export async function POST(req: NextRequest) {
         max_tokens: 1024,
         response_format: { type: 'json_object' },
       }),
-      signal: AbortSignal.timeout(60_000),
+      signal: AbortSignal.timeout(25_000),
     })
 
     if (!res.ok) {
