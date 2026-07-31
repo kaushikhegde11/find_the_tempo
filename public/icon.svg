@@ -1,0 +1,20 @@
+<svg width="180" height="180" viewBox="0 0 180 180" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <style>
+    @media (prefers-color-scheme: light) {
+      .background { fill: black; }
+      .foreground { fill: white; }
+    }
+    @media (prefers-color-scheme: dark) {
+      .background { fill: white; }
+      .foreground { fill: black; }
+    }
+  </style>
+  <rect class="background" width="180" height="180" rx="37" />
+  <!-- Equalizer / tempo bars -->
+  <g class="foreground">
+    <rect x="42"  y="74"  width="16" height="32"  rx="8" />
+    <rect x="70"  y="52"  width="16" height="76"  rx="8" />
+    <rect x="98"  y="38"  width="16" height="104" rx="8" />
+    <rect x="126" y="66"  width="16" height="48"  rx="8" />
+  </g>
+</svg>
