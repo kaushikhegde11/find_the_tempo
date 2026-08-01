@@ -1,5 +1,6 @@
 'use client'
 
+import { useState } from 'react'
 import Link from 'next/link'
 import { ArrowRight, ImageUp, ScanLine, Link2, Instagram, Music, Newspaper } from 'lucide-react'
 
@@ -15,6 +16,8 @@ function Node({ className = '' }: { className?: string }) {
 }
 
 export default function LandingPage() {
+  const [recOn, setRecOn] = useState(true)
+
   return (
     <main className="flex min-h-screen flex-col bg-background text-foreground">
       {/* Nav — product-tag wordmark with status LED */}
@@ -24,13 +27,23 @@ export default function LandingPage() {
             id="nav-wordmark"
             className="inline-flex items-stretch overflow-hidden rounded-md border border-foreground/70 bg-card"
           >
-            {/* pressed-state record button — fills full height */}
-            <span
-              className="flex items-center justify-center border-r border-foreground/40 px-3"
-              style={{ boxShadow: 'inset 0 2px 5px rgba(0,0,0,0.45)' }}
+            {/* clickable record button — glows only while pressed (no real action) */}
+            <button
+              type="button"
+              onClick={() => setRecOn((v) => !v)}
+              aria-pressed={recOn}
+              title="Record"
+              className="flex items-center justify-center border-r border-foreground/40 px-3 transition-[box-shadow,filter] hover:brightness-105"
+              style={{
+                boxShadow: recOn
+                  ? 'inset 0 2px 5px rgba(0,0,0,0.45)'
+                  : 'inset 0 1px 0 rgba(255,255,255,0.7)',
+              }}
             >
-              <span className="rec-glow h-2.5 w-2.5 rounded-full bg-primary" />
-            </span>
+              <span
+                className={'h-2.5 w-2.5 rounded-full bg-primary ' + (recOn ? 'rec-glow' : '')}
+              />
+            </button>
             {/* wordmark — footer font */}
             <span className="px-4 py-1.5 text-sm font-bold lowercase tracking-tight">
               find the tempo
@@ -43,8 +56,7 @@ export default function LandingPage() {
       <section className="flex w-full flex-1 flex-col px-2.5 py-2.5">
         <div className="flex flex-1 flex-col overflow-hidden rounded-lg border border-border bg-card shadow-sm">
           {/* Faceplate header strip */}
-          <div className="flex items-center justify-between border-b border-border px-4 py-2 font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground sm:px-6">
-            <span>tracklist scanner</span>
+          <div className="flex items-center justify-end border-b border-border px-4 py-2 font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground sm:px-6">
             <span className="flex items-center gap-1.5">
               <span className="h-1.5 w-1.5 rounded-full bg-primary" />
               <span className="h-1.5 w-1.5 rounded-full bg-foreground/25" />
@@ -59,18 +71,7 @@ export default function LandingPage() {
             <Node className="absolute right-3 top-3" />
             <Node className="absolute bottom-3 left-3" />
             <Node className="absolute bottom-3 right-3" />
-            {/* coordinate readouts */}
-            <span className="absolute left-4 top-4 font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
-              scr-01
-            </span>
-            <span className="absolute bottom-4 right-4 font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
-              x:1080 · y:1920
-            </span>
-
             <div className="relative mx-auto max-w-3xl rounded-md bg-card px-5 py-5">
-              <p className="mb-4 font-mono text-xs uppercase tracking-[0.25em] text-primary">
-                screenshot → links
-              </p>
               <h1 className="text-balance text-4xl font-bold tracking-tight sm:text-6xl">
                 Convert screenshots into findable links
               </h1>

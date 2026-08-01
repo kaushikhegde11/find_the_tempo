@@ -407,7 +407,7 @@
   }
 }
 .rec-glow {
-  animation: rec-glow 5s ease-in-out infinite;
+  animation: rec-glow 4s ease-in-out infinite;
 }
 @media (prefers-reduced-motion: reduce) {
   .rec-glow {
