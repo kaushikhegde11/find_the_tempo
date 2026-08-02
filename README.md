@@ -46,8 +46,20 @@ npm start
 
 ## Deploy
 
-Any host that runs a Next.js server works (Vercel, Netlify, Cloudflare, Render). No environment
-variables needed. On Vercel: import the GitHub repo and deploy — that's it.
+Hosted on **Netlify**. Any host that runs a Next.js server works.
+
+On Netlify:
+
+1. Import the GitHub repo (Netlify auto-detects Next.js via the official Next Runtime — no
+   `netlify.toml` needed for a standard build).
+2. Build command `next build`, publish handled by the Next Runtime.
+3. Add the environment variables under **Site settings → Environment variables** (they are not
+   read from `.env.local` in production):
+   - `OPENROUTER_API_KEY` — OCR model access
+   - `QWEN_MODEL` — which vision model to call
+   - `NEXT_PUBLIC_APP_URL` — your live URL (sent as HTTP-Referer to OpenRouter)
+   - `NEXT_PUBLIC_GA_ID` — Google Analytics 4 measurement ID
+4. Deploy.
 
 ## Project structure
 
