@@ -4,7 +4,10 @@ import { Song } from './types'
  * Extracts songs from a screenshot by sending the image to the
  * /api/extract-songs Next.js API route, which reads the image with a vision model.
  */
-export async function extractSongsFromScreenshot(imageFile: File): Promise<Song[]> {
+export async function extractSongsFromScreenshot(
+  imageFile: File,
+  signal?: AbortSignal
+): Promise<Song[]> {
   console.log('[OCR] Processing image:', imageFile.name)
 
   const formData = new FormData()
@@ -13,6 +16,7 @@ export async function extractSongsFromScreenshot(imageFile: File): Promise<Song[
   const response = await fetch('/api/extract-songs', {
     method: 'POST',
     body: formData,
+    signal,
   })
 
   if (!response.ok) {

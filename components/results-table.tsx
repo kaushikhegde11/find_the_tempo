@@ -34,6 +34,10 @@ const SERVICE_NAME: Record<Platform, string> = {
   apple: 'Apple Music',
   spotify: 'Spotify',
   ytmusic: 'YouTube Music',
+  beatport: 'Beatport',
+  soundcloud: 'SoundCloud',
+  discogs: 'Discogs',
+  bandcamp: 'Bandcamp',
 }
 
 const trackName = (s: Song) => s.appleTrackName || s.originalName
@@ -53,6 +57,13 @@ const spotifyUrl = (s: Song) =>
     : 'https://open.spotify.com/search/' +
       encodeURIComponent(`${artistName(s)} ${trackName(s)}`)
 
+// Search-style links for services with no public track API — always available.
+const q = (s: Song) => encodeURIComponent(`${artistName(s)} ${trackName(s)}`)
+const beatportUrl = (s: Song) => `https://www.beatport.com/search?q=${q(s)}`
+const soundcloudUrl = (s: Song) => `https://soundcloud.com/search?q=${q(s)}`
+const discogsUrl = (s: Song) => `https://www.discogs.com/search/?type=release&q=${q(s)}`
+const bandcampUrl = (s: Song) => `https://bandcamp.com/search?q=${q(s)}`
+
 /** Link for a song on the given platform, or undefined when not found. */
 function linkFor(song: Song, platform: Platform): string | undefined {
   switch (platform) {
@@ -62,6 +73,14 @@ function linkFor(song: Song, platform: Platform): string | undefined {
       return spotifyUrl(song) // direct or search link — always available
     case 'ytmusic':
       return ytMusicUrl(song) // search link — always available
+    case 'beatport':
+      return beatportUrl(song)
+    case 'soundcloud':
+      return soundcloudUrl(song)
+    case 'discogs':
+      return discogsUrl(song)
+    case 'bandcamp':
+      return bandcampUrl(song)
   }
 }
 
@@ -122,9 +141,9 @@ export function ResultsTable({ songs, platform, onEdit, onDelete }: ResultsTable
   // Plain readable list for the SELECTED service: service title, then
   // "<track> by <artist> — <link>" per song.
   const buildList = () => {
-    const lines = songs.map((s) => {
+    const lines = songs.map((s, i) => {
       const link = linkFor(s, platform)
-      return `${trackName(s)} by ${artistName(s)}${link ? ` — ${link}` : ''}`
+      return `${i + 1}. ${trackName(s)} by ${artistName(s)}${link ? ` — ${link}` : ''}`
     })
     return [`${SERVICE_NAME[platform]}`, '', ...lines].join('\n')
   }

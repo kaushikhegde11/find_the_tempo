@@ -1,7 +1,7 @@
 'use client'
 
 import { useCallback, useRef, useState } from 'react'
-import { Cloud, Upload } from 'lucide-react'
+import { CassetteTape, ArrowUpFromLine } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 interface UploadZoneProps {
@@ -84,12 +84,10 @@ export function UploadZone({
       />
 
       <div className="flex flex-col items-center gap-4">
-        <div className="rounded-full bg-primary/10 p-4">
-          {isDragActive ? (
-            <Cloud className="h-8 w-8 text-primary animate-bounce" />
-          ) : (
-            <Upload className="h-8 w-8 text-primary" />
-          )}
+        <div className="rounded-full border border-primary/30 bg-primary/10 p-4 shadow-[inset_0_2px_6px_rgba(0,0,0,0.30)]">
+          <CassetteTape
+            className={cn('h-8 w-8 text-primary', isDragActive && 'animate-bounce')}
+          />
         </div>
 
         <div className="space-y-2">
@@ -110,7 +108,7 @@ export function UploadZone({
             (disabled || isProcessing) && 'cursor-not-allowed'
           )}
         >
-          <Upload className="h-4 w-4" />
+          <ArrowUpFromLine className="h-4 w-4" />
           Select Files
         </button>
 

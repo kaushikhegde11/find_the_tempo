@@ -1,6 +1,3 @@
-'use client'
-
-import { useState } from 'react'
 import Link from 'next/link'
 import { ArrowRight, ImageUp, ScanLine, Link2, Instagram, Music, Newspaper } from 'lucide-react'
 
@@ -16,42 +13,8 @@ function Node({ className = '' }: { className?: string }) {
 }
 
 export default function LandingPage() {
-  const [recOn, setRecOn] = useState(true)
-
   return (
     <main className="flex min-h-screen flex-col bg-background text-foreground">
-      {/* Nav — product-tag wordmark with status LED */}
-      <nav className="border-b border-border">
-        <div className="mx-auto flex max-w-6xl items-center justify-center px-6 py-2.5 sm:px-8">
-          <span
-            id="nav-wordmark"
-            className="inline-flex items-stretch overflow-hidden rounded-md border border-foreground/70 bg-card"
-          >
-            {/* clickable record button — glows only while pressed (no real action) */}
-            <button
-              type="button"
-              onClick={() => setRecOn((v) => !v)}
-              aria-pressed={recOn}
-              title="Record"
-              className="flex items-center justify-center border-r border-foreground/40 px-3 transition-[box-shadow,filter] hover:brightness-105"
-              style={{
-                boxShadow: recOn
-                  ? 'inset 0 2px 5px rgba(0,0,0,0.45)'
-                  : 'inset 0 1px 0 rgba(255,255,255,0.7)',
-              }}
-            >
-              <span
-                className={'h-2.5 w-2.5 rounded-full bg-primary ' + (recOn ? 'rec-glow' : '')}
-              />
-            </button>
-            {/* wordmark — footer font */}
-            <span className="px-4 py-1.5 text-sm font-bold lowercase tracking-tight">
-              find the tempo
-            </span>
-          </span>
-        </div>
-      </nav>
-
       {/* Hero — device faceplate on a blueprint grid */}
       <section className="flex w-full flex-1 flex-col px-2.5 py-2.5">
         <div className="flex flex-1 flex-col overflow-hidden rounded-lg border border-border bg-card shadow-sm">

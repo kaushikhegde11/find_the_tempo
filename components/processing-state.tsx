@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { CheckCircle2, Loader2, FileImage, Zap, Search } from 'lucide-react'
+import { CheckCircle2, Loader2, FileImage, Zap, Search, X } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { MusicLoader } from '@/components/music-loader'
 
@@ -21,12 +21,14 @@ interface ProcessingStateProps {
   isProcessing: boolean
   currentStage?: number
   onComplete?: () => void
+  onCancel?: () => void
 }
 
 export function ProcessingState({
   isProcessing,
   currentStage = 0,
   onComplete,
+  onCancel,
 }: ProcessingStateProps) {
   const [displayStage, setDisplayStage] = useState(0)
 
@@ -99,6 +101,19 @@ export function ProcessingState({
           </div>
         </div>
       ))}
+
+      {isProcessing && onCancel && (
+        <div className="flex justify-center border-t border-border/50 pt-6">
+          <button
+            type="button"
+            onClick={onCancel}
+            className="te-key te-key--light te-key--sm inline-flex items-center gap-2 rounded-md bg-card px-4 py-2 font-mono text-xs font-semibold uppercase tracking-wide text-foreground"
+          >
+            <X className="h-4 w-4" />
+            Cancel
+          </button>
+        </div>
+      )}
     </div>
   )
 }

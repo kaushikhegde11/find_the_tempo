@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import { Geist, Geist_Mono } from 'next/font/google'
 import { AppProvider } from '@/lib/context'
+import { SiteHeader } from '@/components/site-header'
 import './globals.css'
 
 const _geist = Geist({ subsets: ["latin"] });
@@ -16,14 +17,18 @@ export const metadata: Metadata = {
 
 export default function RootLayout({
   children,
+  modal,
 }: Readonly<{
   children: React.ReactNode
+  modal: React.ReactNode
 }>) {
   return (
     <html lang="en" className="bg-background">
       <body className="font-sans antialiased">
         <AppProvider>
+          <SiteHeader />
           {children}
+          {modal}
         </AppProvider>
       </body>
     </html>

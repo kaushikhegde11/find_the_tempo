@@ -9,8 +9,9 @@ import { useAppContext } from '@/lib/context'
 import { Song } from '@/lib/types'
 
 export default function ResultsPage() {
-  const { songs, setSongs } = useAppContext()
-  const [platform, setPlatform] = useState<Platform>('apple')
+  const { songs, setSongs, selectedPlatforms } = useAppContext()
+  // Default the active toggle to the first service the user picked.
+  const [platform, setPlatform] = useState<Platform>(selectedPlatforms[0] ?? 'apple')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -114,19 +115,6 @@ export default function ResultsPage() {
 
   return (
     <main className="min-h-screen bg-gradient-to-b from-background to-muted/30">
-      {/* Navigation */}
-      <nav className="border-b border-border/50 bg-background/80 backdrop-blur-sm sticky top-0 z-50">
-        <div className="mx-auto max-w-6xl px-6 py-4 sm:px-8">
-          <Link
-            href="/upload"
-            className="te-key te-key--light te-key--sm inline-flex items-center gap-2 rounded-md bg-card px-3 py-1.5 font-mono text-xs font-semibold uppercase tracking-wide text-foreground"
-          >
-            <ArrowLeft className="h-4 w-4" />
-            Upload another
-          </Link>
-        </div>
-      </nav>
-
       {/* Main Content */}
       <section className="mx-auto max-w-6xl px-6 py-16 sm:px-8 sm:py-24">
         <div className="space-y-8">
@@ -141,7 +129,7 @@ export default function ResultsPage() {
 
           {/* Platform toggle + hint (centered) */}
           <div className="flex flex-col items-center gap-2">
-            <PlatformToggle value={platform} onChange={setPlatform} />
+            <PlatformToggle value={platform} onChange={setPlatform} options={selectedPlatforms} />
             <span className="inline-flex items-center gap-1.5 text-xs text-muted-foreground">
               <Info className="h-3.5 w-3.5" />
               Switch link platform anytime

@@ -96,6 +96,22 @@ export async function POST(req: NextRequest) {
       )
     }
 
+    // Brief buffer so an accidental upload can still be cancelled before any
+    // model work begins. Abortable: if the client cancels/navigates during it,
+    // req.signal fires and we bail before spending any OpenRouter credit.
+    await new Promise<void>((resolve, reject) => {
+      if (req.signal.aborted) return reject(new DOMException('Aborted', 'AbortError'))
+      const t = setTimeout(resolve, 2000)
+      req.signal.addEventListener(
+        'abort',
+        () => {
+          clearTimeout(t)
+          reject(new DOMException('Aborted', 'AbortError'))
+        },
+        { once: true }
+      )
+    })
+
     const buffer = Buffer.from(await file.arrayBuffer())
     const base64Image = buffer.toString('base64')
     const mimeType = file.type
@@ -126,10 +142,16 @@ export async function POST(req: NextRequest) {
           },
         ],
         temperature: 0.1,
-        max_tokens: 4096,
+        // OpenRouter pre-checks affordability against max_tokens. Omitting it
+        // checks against the model's full 65k cap — guaranteed 402 on a low
+        // balance. So a cap must exist; 2048 fits a long tracklist's JSON and
+        // parseSongs salvages any truncation.
+        max_tokens: 2048,
         response_format: { type: 'json_object' },
       }),
-      signal: AbortSignal.timeout(25_000),
+      // Abort the upstream model call when the client disconnects
+      // (Cancel button / navigation) OR after 25s, whichever comes first.
+      signal: AbortSignal.any([req.signal, AbortSignal.timeout(25_000)]),
     })
 
     if (!res.ok) {
@@ -156,6 +178,12 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({ songs, count: songs.length })
   } catch (error: any) {
+    // Client disconnected (Cancel / navigation) — upstream call was aborted.
+    // Nothing is listening for the response; end quietly, no error log.
+    if (error.name === 'AbortError' || req.signal.aborted) {
+      console.log('[OCR] Client aborted — upstream model call stopped.')
+      return new NextResponse(null, { status: 499 })
+    }
     if (error.name === 'TimeoutError') {
       return NextResponse.json({ error: 'Request timed out. Try again.' }, { status: 504 })
     }

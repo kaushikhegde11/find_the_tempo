@@ -2,10 +2,13 @@
 
 import React, { createContext, useContext, useState, useCallback } from 'react'
 import { Song, SpotifyUser, PlaylistData } from './types'
+import { Platform, DEFAULT_PLATFORMS } from '@/components/platform-toggle'
 
 interface AppContextType {
   songs: Song[]
   setSongs: (songs: Song[]) => void
+  selectedPlatforms: Platform[]
+  setSelectedPlatforms: (platforms: Platform[]) => void
   spotifyUser: SpotifyUser | null
   setSpotifyUser: (user: SpotifyUser | null) => void
   spotifyAccessToken: string | null
@@ -21,6 +24,7 @@ const TOKEN_STORAGE_KEY = 'spotify_access_token'
 
 export function AppProvider({ children }: { children: React.ReactNode }) {
   const [songs, setSongs] = useState<Song[]>([])
+  const [selectedPlatforms, setSelectedPlatforms] = useState<Platform[]>(DEFAULT_PLATFORMS)
   const [spotifyUser, setSpotifyUser] = useState<SpotifyUser | null>(null)
   const [spotifyAccessToken, setSpotifyAccessTokenState] = useState<string | null>(
     () => (typeof window !== 'undefined' ? sessionStorage.getItem(TOKEN_STORAGE_KEY) : null)
@@ -37,6 +41,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
   const reset = useCallback(() => {
     setSongs([])
+    setSelectedPlatforms(DEFAULT_PLATFORMS)
     setSpotifyUser(null)
     setSpotifyAccessToken(null)
     setPlaylist(null)
@@ -47,6 +52,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       value={{
         songs,
         setSongs,
+        selectedPlatforms,
+        setSelectedPlatforms,
         spotifyUser,
         setSpotifyUser,
         spotifyAccessToken,
