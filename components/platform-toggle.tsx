@@ -20,7 +20,7 @@ export const PLATFORMS: { key: Platform; label: string; accent: string }[] = [
   { key: 'beatport', label: 'Beatport', accent: '#A8E00F' },
   { key: 'soundcloud', label: 'SoundCloud', accent: '#FF5500' },
   { key: 'discogs', label: 'Discogs', accent: '#333333' },
-  { key: 'bandcamp', label: 'Bandcamp', accent: '#629AA9' },
+  { key: 'bandcamp', label: 'Bandcamp', accent: '#4FD1C5' },
 ]
 
 // What we default the picker to when the user hasn't chosen yet.
