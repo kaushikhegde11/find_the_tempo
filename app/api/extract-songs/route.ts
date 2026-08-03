@@ -6,6 +6,11 @@ const OPENROUTER_API_URL = 'https://openrouter.ai/api/v1/chat/completions'
 // whose latency swings past serverless timeouts.
 const VISION_MODEL = process.env.QWEN_MODEL || 'google/gemini-2.5-flash'
 
+// Which upstream reads the screenshot. 'gemini' hits the Google AI Studio Gemini
+// API directly (billed to GCP credits); 'openrouter' is the original fallback path.
+const OCR_PROVIDER = process.env.OCR_PROVIDER || 'openrouter'
+const GEMINI_MODEL = process.env.GEMINI_MODEL || 'gemini-3.5-flash-lite'
+
 type RawSong = { name: string; artist: string; confidence: number }
 
 /**
@@ -71,9 +76,128 @@ Rules:
 - Skip UI elements like buttons, timestamps, playlist names, duration, play counts
 - If no songs are visible, return {"songs": []}`
 
+/**
+ * Read the screenshot via OpenRouter (chat/completions with an image_url part).
+ * Returns the model's raw text reply for parseSongs to handle.
+ */
+async function callOpenRouter(
+  base64Image: string,
+  mimeType: string,
+  signal: AbortSignal
+): Promise<string> {
+  const res = await fetch(OPENROUTER_API_URL, {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${process.env.OPENROUTER_API_KEY}`,
+      'Content-Type': 'application/json',
+      'HTTP-Referer': process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000',
+      'X-Title': 'Screenshot to Playlist',
+    },
+    body: JSON.stringify({
+      model: VISION_MODEL,
+      messages: [
+        {
+          role: 'user',
+          content: [
+            {
+              type: 'image_url',
+              image_url: { url: `data:${mimeType};base64,${base64Image}` },
+            },
+            {
+              type: 'text',
+              text: PROMPT,
+            },
+          ],
+        },
+      ],
+      temperature: 0.1,
+      // OpenRouter pre-checks affordability against max_tokens. Omitting it
+      // checks against the model's full 65k cap — guaranteed 402 on a low
+      // balance. So a cap must exist; 2048 fits a long tracklist's JSON and
+      // parseSongs salvages any truncation.
+      max_tokens: 2048,
+      response_format: { type: 'json_object' },
+    }),
+    signal,
+  })
+
+  if (!res.ok) {
+    const body = await res.text()
+    console.error('[OpenRouter] API error:', body)
+    throw new UpstreamError('OpenRouter API request failed', res.status, body)
+  }
+
+  const data = await res.json()
+  return data.choices?.[0]?.message?.content ?? ''
+}
+
+/**
+ * Read the screenshot via the Google AI Studio Gemini API (generateContent with
+ * an inline base64 image part). Billed to the key's GCP project. Returns raw text.
+ */
+async function callGemini(
+  base64Image: string,
+  mimeType: string,
+  signal: AbortSignal
+): Promise<string> {
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent`
+  const res = await fetch(url, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-goog-api-key': process.env.GEMINI_API_KEY!,
+    },
+    body: JSON.stringify({
+      contents: [
+        {
+          role: 'user',
+          parts: [
+            { inline_data: { mime_type: mimeType, data: base64Image } },
+            { text: PROMPT },
+          ],
+        },
+      ],
+      generationConfig: {
+        temperature: 0.1,
+        maxOutputTokens: 2048,
+        responseMimeType: 'application/json',
+      },
+    }),
+    signal,
+  })
+
+  if (!res.ok) {
+    const body = await res.text()
+    console.error('[Gemini] API error:', body)
+    throw new UpstreamError('Gemini API request failed', res.status, body)
+  }
+
+  const data = await res.json()
+  return data.candidates?.[0]?.content?.parts?.[0]?.text ?? ''
+}
+
+// Carries the upstream HTTP status through so the route can mirror it to the client.
+class UpstreamError extends Error {
+  status: number
+  detail: string
+  constructor(message: string, status: number, detail: string) {
+    super(message)
+    this.name = 'UpstreamError'
+    this.status = status
+    this.detail = detail
+  }
+}
+
 export async function POST(req: NextRequest) {
-  const apiKey = process.env.OPENROUTER_API_KEY
-  if (!apiKey) {
+  // Provider-aware key guard.
+  if (OCR_PROVIDER === 'gemini') {
+    if (!process.env.GEMINI_API_KEY) {
+      return NextResponse.json(
+        { error: 'GEMINI_API_KEY is not set (OCR_PROVIDER=gemini)' },
+        { status: 503 }
+      )
+    }
+  } else if (!process.env.OPENROUTER_API_KEY) {
     return NextResponse.json(
       { error: 'OPENROUTER_API_KEY is not set in .env.local' },
       { status: 503 }
@@ -116,59 +240,18 @@ export async function POST(req: NextRequest) {
     const base64Image = buffer.toString('base64')
     const mimeType = file.type
 
-    const res = await fetch(OPENROUTER_API_URL, {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${apiKey}`,
-        'Content-Type': 'application/json',
-        'HTTP-Referer': process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000',
-        'X-Title': 'Screenshot to Playlist',
-      },
-      body: JSON.stringify({
-        model: VISION_MODEL,
-        messages: [
-          {
-            role: 'user',
-            content: [
-              {
-                type: 'image_url',
-                image_url: { url: `data:${mimeType};base64,${base64Image}` },
-              },
-              {
-                type: 'text',
-                text: PROMPT,
-              },
-            ],
-          },
-        ],
-        temperature: 0.1,
-        // OpenRouter pre-checks affordability against max_tokens. Omitting it
-        // checks against the model's full 65k cap — guaranteed 402 on a low
-        // balance. So a cap must exist; 2048 fits a long tracklist's JSON and
-        // parseSongs salvages any truncation.
-        max_tokens: 2048,
-        response_format: { type: 'json_object' },
-      }),
-      // Abort the upstream model call when the client disconnects
-      // (Cancel button / navigation) OR after 25s, whichever comes first.
-      signal: AbortSignal.any([req.signal, AbortSignal.timeout(25_000)]),
-    })
+    // Abort the upstream model call when the client disconnects
+    // (Cancel button / navigation) OR after 25s, whichever comes first.
+    const signal = AbortSignal.any([req.signal, AbortSignal.timeout(25_000)])
 
-    if (!res.ok) {
-      const body = await res.text()
-      console.error('[Qwen/OpenRouter] API error:', body)
-      return NextResponse.json(
-        { error: 'OpenRouter API request failed', detail: body },
-        { status: res.status }
-      )
-    }
-
-    const data = await res.json()
-    const rawContent: string = data.choices?.[0]?.message?.content ?? ''
+    const rawContent =
+      OCR_PROVIDER === 'gemini'
+        ? await callGemini(base64Image, mimeType, signal)
+        : await callOpenRouter(base64Image, mimeType, signal)
 
     const parsed = parseSongs(rawContent)
     if (parsed === null) {
-      console.error('[Qwen/OpenRouter] Unparseable response:', rawContent)
+      console.error(`[${OCR_PROVIDER}] Unparseable response:`, rawContent)
       return NextResponse.json({ error: 'Model returned unreadable output' }, { status: 500 })
     }
 
@@ -187,7 +270,13 @@ export async function POST(req: NextRequest) {
     if (error.name === 'TimeoutError') {
       return NextResponse.json({ error: 'Request timed out. Try again.' }, { status: 504 })
     }
-    console.error('[Qwen/OpenRouter] Unexpected error:', error)
+    if (error instanceof UpstreamError) {
+      return NextResponse.json(
+        { error: error.message, detail: error.detail },
+        { status: error.status }
+      )
+    }
+    console.error(`[${OCR_PROVIDER}] Unexpected error:`, error)
     return NextResponse.json({ error: error.message || 'Internal server error' }, { status: 500 })
   }
 }
