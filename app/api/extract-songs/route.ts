@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { GoogleAuth } from 'google-auth-library'
 
 const OPENROUTER_API_URL = 'https://openrouter.ai/api/v1/chat/completions'
 // Vision model for reading the screenshot. Gemini 2.5 Flash is served by a single
@@ -6,10 +7,46 @@ const OPENROUTER_API_URL = 'https://openrouter.ai/api/v1/chat/completions'
 // whose latency swings past serverless timeouts.
 const VISION_MODEL = process.env.QWEN_MODEL || 'google/gemini-2.5-flash'
 
-// Which upstream reads the screenshot. 'gemini' hits the Google AI Studio Gemini
-// API directly (billed to GCP credits); 'openrouter' is the original fallback path.
+// Which upstream reads the screenshot:
+//   'vertex'     — Vertex AI generateContent, billed to the project's Cloud Billing
+//                  account (spends GCP credits). Needs a service-account JSON.
+//   'gemini'     — Google AI Studio Gemini API (API key; separate prepay wallet).
+//   'openrouter' — original fallback path.
 const OCR_PROVIDER = process.env.OCR_PROVIDER || 'openrouter'
 const GEMINI_MODEL = process.env.GEMINI_MODEL || 'gemini-3.5-flash-lite'
+
+// Vertex config. Gemini 3.x is served from the 'global' location.
+const VERTEX_PROJECT = process.env.GOOGLE_VERTEX_PROJECT
+const VERTEX_LOCATION = process.env.GOOGLE_VERTEX_LOCATION || 'global'
+
+// Cache the OAuth token + auth client across invocations on a warm instance so
+// we don't re-sign a JWT on every request (token lifetime ~1h).
+let vertexAuth: GoogleAuth | null = null
+let cachedToken: { value: string; expiresAt: number } | null = null
+
+function getVertexAuth(): GoogleAuth {
+  if (vertexAuth) return vertexAuth
+  const raw = process.env.GOOGLE_SERVICE_ACCOUNT_JSON
+  if (!raw) throw new Error('GOOGLE_SERVICE_ACCOUNT_JSON is not set')
+  const credentials = JSON.parse(raw)
+  vertexAuth = new GoogleAuth({
+    credentials,
+    scopes: ['https://www.googleapis.com/auth/cloud-platform'],
+  })
+  return vertexAuth
+}
+
+async function getVertexToken(): Promise<string> {
+  if (cachedToken && cachedToken.expiresAt > Date.now() + 60_000) {
+    return cachedToken.value
+  }
+  const client = await getVertexAuth().getClient()
+  const { token } = await client.getAccessToken()
+  if (!token) throw new Error('Failed to mint Vertex access token')
+  // google-auth-library refreshes internally; cache for 50 min to be safe.
+  cachedToken = { value: token, expiresAt: Date.now() + 50 * 60_000 }
+  return token
+}
 
 type RawSong = { name: string; artist: string; confidence: number }
 
@@ -176,6 +213,60 @@ async function callGemini(
   return data.candidates?.[0]?.content?.parts?.[0]?.text ?? ''
 }
 
+/**
+ * Read the screenshot via Vertex AI generateContent. Billed to the project's
+ * Cloud Billing account (spends GCP credits). Auth = service-account OAuth token.
+ * Returns raw model text. Same request shape as the AI Studio Gemini call.
+ */
+async function callVertex(
+  base64Image: string,
+  mimeType: string,
+  signal: AbortSignal
+): Promise<string> {
+  const token = await getVertexToken()
+  const host =
+    VERTEX_LOCATION === 'global'
+      ? 'aiplatform.googleapis.com'
+      : `${VERTEX_LOCATION}-aiplatform.googleapis.com`
+  const url =
+    `https://${host}/v1/projects/${VERTEX_PROJECT}/locations/${VERTEX_LOCATION}` +
+    `/publishers/google/models/${GEMINI_MODEL}:generateContent`
+
+  const res = await fetch(url, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify({
+      contents: [
+        {
+          role: 'user',
+          parts: [
+            { inline_data: { mime_type: mimeType, data: base64Image } },
+            { text: PROMPT },
+          ],
+        },
+      ],
+      generationConfig: {
+        temperature: 0.1,
+        maxOutputTokens: 2048,
+        responseMimeType: 'application/json',
+      },
+    }),
+    signal,
+  })
+
+  if (!res.ok) {
+    const body = await res.text()
+    console.error('[Vertex] API error:', body)
+    throw new UpstreamError('Vertex API request failed', res.status, body)
+  }
+
+  const data = await res.json()
+  return data.candidates?.[0]?.content?.parts?.[0]?.text ?? ''
+}
+
 // Carries the upstream HTTP status through so the route can mirror it to the client.
 class UpstreamError extends Error {
   status: number
@@ -189,8 +280,18 @@ class UpstreamError extends Error {
 }
 
 export async function POST(req: NextRequest) {
-  // Provider-aware key guard.
-  if (OCR_PROVIDER === 'gemini') {
+  // Provider-aware config guard.
+  if (OCR_PROVIDER === 'vertex') {
+    if (!process.env.GOOGLE_SERVICE_ACCOUNT_JSON || !VERTEX_PROJECT) {
+      return NextResponse.json(
+        {
+          error:
+            'Vertex not configured: set GOOGLE_SERVICE_ACCOUNT_JSON and GOOGLE_VERTEX_PROJECT',
+        },
+        { status: 503 }
+      )
+    }
+  } else if (OCR_PROVIDER === 'gemini') {
     if (!process.env.GEMINI_API_KEY) {
       return NextResponse.json(
         { error: 'GEMINI_API_KEY is not set (OCR_PROVIDER=gemini)' },
@@ -245,9 +346,11 @@ export async function POST(req: NextRequest) {
     const signal = AbortSignal.any([req.signal, AbortSignal.timeout(25_000)])
 
     const rawContent =
-      OCR_PROVIDER === 'gemini'
-        ? await callGemini(base64Image, mimeType, signal)
-        : await callOpenRouter(base64Image, mimeType, signal)
+      OCR_PROVIDER === 'vertex'
+        ? await callVertex(base64Image, mimeType, signal)
+        : OCR_PROVIDER === 'gemini'
+          ? await callGemini(base64Image, mimeType, signal)
+          : await callOpenRouter(base64Image, mimeType, signal)
 
     const parsed = parseSongs(rawContent)
     if (parsed === null) {
