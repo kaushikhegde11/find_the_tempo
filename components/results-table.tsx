@@ -246,7 +246,7 @@ export function ResultsTable({ songs, platform, onEdit, onDelete }: ResultsTable
         </div>
       </div>
 
-      <div className="overflow-x-auto rounded-lg border border-border">
+      <div className="overflow-x-auto rounded-md border border-border bg-card">
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-border bg-muted/50">
@@ -437,7 +437,7 @@ export function ResultsTable({ songs, platform, onEdit, onDelete }: ResultsTable
       </div>
 
       {/* Summary */}
-      <div className="rounded-lg bg-muted/30 p-4 text-sm text-muted-foreground flex items-center justify-between">
+      <div className="rounded-md border border-border bg-card p-4 text-sm text-muted-foreground flex items-center justify-between">
         <span>
           {songs.length} song{songs.length !== 1 ? 's' : ''} · add the ones you like to any playlist manually
         </span>

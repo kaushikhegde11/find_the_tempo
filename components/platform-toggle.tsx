@@ -51,7 +51,7 @@ export function PlatformToggle({ value, onChange, options }: PlatformToggleProps
             onClick={() => onChange(opt.key)}
             aria-pressed={active}
             className={cn(
-              'te-cassette-key te-dots min-w-[120px] justify-between overflow-hidden pt-4 text-neutral-800',
+              'te-cassette-key min-w-[120px] justify-between overflow-hidden pt-4 text-neutral-800',
               active && 'is-pressed'
             )}
           >
