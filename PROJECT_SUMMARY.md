@@ -19,25 +19,34 @@ Upload a screenshot of any song list (from a music app, a story, a review, anywh
 - **Icons**: Lucide React
 - **Vision model**: Google Gemini 2.5 Flash via OpenRouter (screenshot → songs)
 - **Music lookup**: public iTunes Search API (Apple Music, no auth)
+- **Analytics**: Google Analytics 4 via `@next/third-parties` (prod-gated)
+- **Hosting**: Netlify (Next Runtime; live at `findthetempo.netlify.app`)
 
 ### Project Structure
 
 ```
 app/
 ├── page.tsx                        # Landing page (hero, 3 steps, footer)
-├── upload/page.tsx                 # Upload screenshots + processing state
-├── results/page.tsx                # Song links table (Apple/Spotify/YT toggle)
-├── layout.tsx
+├── upload/page.tsx                 # Full-page /upload (direct visit fallback)
+├── results/page.tsx                # Song links table (platform toggle)
+├── layout.tsx                      # SiteHeader + {children} + {modal} slot + GA4
 ├── globals.css
+├── @modal/                         # Parallel route slot for the upload modal
+│   ├── (.)upload/page.tsx          # Intercepting modal (soft-nav from home)
+│   ├── [...catchAll]/page.tsx      # Resets slot on forward nav (→ /results)
+│   └── default.tsx                 # Empty slot on other routes
 └── api/
     ├── extract-songs/route.ts      # POST image → vision model → songs JSON
     └── apple-music/search/route.ts # POST songs → iTunes lookup → Apple links
 
 components/
+├── site-header.tsx                 # Persistent wordmark header (all screens)
+├── upload-flow.tsx                 # Shared upload+OCR logic (page + modal)
 ├── upload-zone.tsx                 # Drag-and-drop file upload
 ├── processing-state.tsx            # Multi-stage progress indicator
+├── platform-picker-dialog.tsx      # Pick which services to build links for
 ├── results-table.tsx               # Song table with per-platform links + edit/delete
-├── platform-toggle.tsx             # Apple / Spotify / YouTube Music switch
+├── platform-toggle.tsx             # Cassette-style platform switch (accent glow)
 ├── music-loader.tsx                # Loading animation
 ├── theme-provider.tsx
 └── ui/                             # shadcn primitives
@@ -49,6 +58,18 @@ lib/
 ├── types.ts                        # Song, PlaylistData, etc.
 └── utils.ts
 ```
+
+### UI / navigation notes
+
+- **Header**: single `SiteHeader` mounted in `layout.tsx` — shows on every screen
+  (flat record LED, wordmark links home). Per-page navs were removed.
+- **Upload as modal**: clicking "Upload a screenshot" soft-navigates to `/upload`,
+  intercepted by `@modal/(.)upload` and rendered as a centered card over a blurred,
+  white-dimmed home page. Direct/hard visits to `/upload` render the full page.
+  The `[...catchAll]` slot forces the modal to close when the flow pushes to `/results`.
+- **Palette**: warm neutrals tinted ~10% toward the signature orange (light + dark);
+  dark mode keeps the orange brand color (does not wash to white). Border tokens
+  unchanged but framed surfaces get a metallic edge + inner shadow.
 
 ## User Flow
 
@@ -75,8 +96,14 @@ Required:
 - `OPENROUTER_API_KEY` — for the vision model.
 - `QWEN_MODEL` / `VISION_MODEL` — optional override (default `google/gemini-2.5-flash`).
 - `NEXT_PUBLIC_APP_URL` — used as HTTP-Referer for OpenRouter.
+- `NEXT_PUBLIC_GA_ID` — Google Analytics 4 measurement ID (`G-EMTQ7S4FWX`).
+  GA is prod-gated, so it only fires in production builds (never on localhost).
 
-**Legacy / unused** (playlist creation removed — safe to drop): `NEXT_PUBLIC_SPOTIFY_CLIENT_ID`, `SPOTIFY_CLIENT_ID`, `SPOTIFY_CLIENT_SECRET`, `NEXT_PUBLIC_SPOTIFY_REDIRECT_URI`.
+On **Netlify**, set these under Site settings → Environment variables (production does
+not read `.env.local`). `NEXT_PUBLIC_*` vars bake in at build time — a fresh deploy is
+required after changing them.
+
+**Legacy / unused** (playlist creation removed — safe to drop): `NEXT_PUBLIC_SPOTIFY_CLIENT_ID`, `SPOTIFY_CLIENT_ID`, `NEXT_PUBLIC_SPOTIFY_REDIRECT_URI`. `SPOTIFY_CLIENT_SECRET` was removed from `.env.local` — **rotate it in the Spotify dashboard** since it sat in plaintext.
 
 ## Run Locally
 
