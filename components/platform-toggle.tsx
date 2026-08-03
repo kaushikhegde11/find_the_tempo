@@ -51,7 +51,7 @@ export function PlatformToggle({ value, onChange, options }: PlatformToggleProps
             onClick={() => onChange(opt.key)}
             aria-pressed={active}
             className={cn(
-              'te-cassette-key min-w-[120px] justify-between overflow-hidden pt-4 text-neutral-800',
+              'te-cassette-key te-dots min-w-[120px] justify-between overflow-hidden pt-4 text-neutral-800',
               active && 'is-pressed'
             )}
           >
@@ -63,7 +63,7 @@ export function PlatformToggle({ value, onChange, options }: PlatformToggleProps
               className="block h-2.5 w-full transition-shadow"
               style={{
                 backgroundColor: opt.accent,
-                opacity: active ? 1 : 0.5,
+                opacity: 1,
                 boxShadow:
                   active && opt.key !== 'discogs'
                     ? `0 0 12px 1px ${opt.accent}, 0 0 5px 0 ${opt.accent}`

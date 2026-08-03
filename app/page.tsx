@@ -15,7 +15,7 @@ function Node({ className = '' }: { className?: string }) {
 
 export default function LandingPage() {
   return (
-    <main className="flex min-h-screen flex-col bg-background text-foreground">
+    <main className="flex min-h-[calc(100svh-3.5rem)] flex-col bg-background text-foreground">
       {/* Hero — device faceplate on a blueprint grid */}
       <section className="flex w-full flex-1 flex-col px-2.5 py-2.5">
         <div className="flex flex-1 flex-col overflow-hidden rounded-lg border border-border bg-card shadow-sm">

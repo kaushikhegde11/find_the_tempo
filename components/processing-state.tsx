@@ -66,17 +66,17 @@ export function ProcessingState({
 
       {stages.map((stage, index) => (
         <div key={stage.id} className="flex items-start gap-4">
-          <div className="pt-0.5">
+          <div className="shrink-0 pt-0.5">
             {index < displayStage ? (
-              <div className="rounded-full bg-green-100 p-2.5">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-green-100">
                 <CheckCircle2 className="h-5 w-5 text-green-600" />
               </div>
             ) : index === displayStage ? (
-              <div className="rounded-full bg-primary/10 p-2.5 animate-pulse">
-                <Loader2 className="h-5 w-5 text-primary animate-spin" />
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary/10">
+                <Loader2 className="h-5 w-5 animate-spin text-primary" />
               </div>
             ) : (
-              <div className="rounded-full bg-muted p-2.5">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-muted text-foreground">
                 {stage.icon}
               </div>
             )}
@@ -93,11 +93,6 @@ export function ProcessingState({
             >
               {stage.label}
             </p>
-            {index === displayStage && (
-              <div className="mt-1.5 h-1 w-40 overflow-hidden rounded-full bg-muted">
-                <div className="progress-slide h-full w-1/3 rounded-full bg-primary" />
-              </div>
-            )}
           </div>
         </div>
       ))}

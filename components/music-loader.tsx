@@ -2,92 +2,66 @@
 
 import { useEffect, useState } from 'react'
 
-/** Pixel equalizer — chunky square bars rising in discrete steps. */
-function PixelEqualizer() {
-  const bars = 5
-  return (
-    <div className="flex h-14 items-end gap-1.5">
-      {Array.from({ length: bars }).map((_, i) => (
-        <span
-          key={i}
-          className="px-bar w-3 bg-foreground"
-          style={{ height: '100%', animationDelay: `${(i % bars) * 0.12}s` }}
-        />
-      ))}
-    </div>
-  )
+const COLS = 5
+const ROWS = 8
+
+// VU / decibel colors by cell height: green (low) → yellow (mid) → red (peak).
+function cellColor(row: number): string {
+  if (row >= ROWS - 1) return '#E5484D' // red — top
+  if (row >= ROWS - 3) return '#F5C518' // yellow — upper mid
+  return '#3AC15A' // green — low
 }
 
-/** Pixel ring — 8 square pixels blinking around a loop. */
-function PixelRing() {
-  const cells = [
-    [0, 0], [1, 0], [2, 0],
-    [2, 1],
-    [2, 2], [1, 2], [0, 2],
-    [0, 1],
-  ]
-  return (
-    <div className="grid h-14 w-14 grid-cols-3 grid-rows-3 gap-1.5">
-      {Array.from({ length: 9 }).map((_, idx) => {
-        const col = idx % 3
-        const row = Math.floor(idx / 3)
-        const ringIndex = cells.findIndex(([c, r]) => c === col && r === row)
-        if (ringIndex === -1) return <span key={idx} />
-        return (
-          <span
-            key={idx}
-            className="px-dot bg-foreground"
-            style={{ animationDelay: `${ringIndex * 0.12}s` }}
-          />
-        )
-      })}
-    </div>
-  )
+// Random-walk each column toward a lively bounce, clamped to [1, ROWS].
+function nextLevels(prev: number[]): number[] {
+  return prev.map((lvl) => {
+    const step = Math.floor(Math.random() * 5) - 2 // -2..+2
+    return Math.max(1, Math.min(ROWS, lvl + step))
+  })
 }
 
-/** Pixel progress — a row of square pixels filling left→right. */
-function PixelProgress() {
-  const count = 8
-  return (
-    <div className="flex h-14 items-center gap-1.5">
-      {Array.from({ length: count }).map((_, i) => (
-        <span
-          key={i}
-          className="px-dot h-3.5 w-3.5 bg-foreground"
-          style={{ animationDelay: `${i * 0.1}s` }}
-        />
-      ))}
-    </div>
-  )
-}
-
-// 3 pixel scenes, 3s each, looping.
-const SCENES: { node: React.ReactNode; caption: string }[] = [
-  { node: <PixelEqualizer />, caption: 'reading the vibes…' },
-  { node: <PixelRing />, caption: 'detecting songs…' },
-  { node: <PixelProgress />, caption: 'finding links…' },
-]
-
+/**
+ * Analog pixel decibel meter — the only loading animation. Five columns of
+ * square pixel segments jump up and down like a VU meter while OCR runs.
+ */
 export function MusicLoader() {
-  const [scene, setScene] = useState(0)
+  const [levels, setLevels] = useState<number[]>(() =>
+    Array.from({ length: COLS }, (_, i) => 3 + (i % 3))
+  )
 
   useEffect(() => {
-    const id = setInterval(() => setScene((s) => (s + 1) % SCENES.length), 3000)
+    const reduce =
+      typeof window !== 'undefined' &&
+      window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
+    if (reduce) return
+    const id = setInterval(() => setLevels(nextLevels), 130)
     return () => clearInterval(id)
   }, [])
 
-  const current = SCENES[scene]
-
   return (
-    <div className="flex flex-col items-center justify-center gap-5 py-6">
-      <div key={scene} className="flex h-14 items-center justify-center animate-fade-in">
-        {current.node}
+    <div className="flex flex-col items-center justify-center gap-2 py-2">
+      <div className="flex items-end gap-[3px] rounded-sm border border-border bg-background/60 p-1.5">
+        {levels.map((lvl, col) => (
+          <div key={col} className="flex flex-col-reverse gap-[2px]">
+            {Array.from({ length: ROWS }).map((_, row) => {
+              const lit = row < lvl
+              return (
+                <span
+                  key={row}
+                  className="h-1 w-2.5"
+                  style={{
+                    backgroundColor: cellColor(row),
+                    opacity: lit ? 1 : 0.12,
+                    boxShadow: lit ? `0 0 4px 0 ${cellColor(row)}` : 'none',
+                  }}
+                />
+              )
+            })}
+          </div>
+        ))}
       </div>
-      <p
-        key={`c-${scene}`}
-        className="animate-fade-in font-mono text-xs uppercase tracking-wider text-muted-foreground"
-      >
-        {current.caption}
+      <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
+        finding your tempo
       </p>
     </div>
   )

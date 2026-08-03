@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, usePathname } from 'next/navigation'
 import { X } from 'lucide-react'
 import { UploadFlow } from '@/components/upload-flow'
 
@@ -13,6 +13,7 @@ import { UploadFlow } from '@/components/upload-flow'
  */
 export default function UploadModal() {
   const router = useRouter()
+  const pathname = usePathname()
   const close = () => router.back()
 
   // Close on Escape.
@@ -24,6 +25,11 @@ export default function UploadModal() {
     return () => window.removeEventListener('keydown', onKey)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
+
+  // Safety net: if the slot stays mounted after navigating away from /upload
+  // (e.g. clicking the header wordmark -> "/", which the catch-all can't cover),
+  // render nothing so the overlay can't linger on top of the new page.
+  if (pathname !== '/upload') return null
 
   return (
     <div
