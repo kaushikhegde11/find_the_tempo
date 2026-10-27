@@ -1,4 +1,6 @@
+import Link from 'next/link'
 import { Instagram, Music, Newspaper } from 'lucide-react'
+import { CookieSettingsButton } from '@/components/cookie-consent'
 
 // Small filled square used as a grid node marker.
 function Node({ className = '' }: { className?: string }) {
@@ -38,16 +40,47 @@ export function SiteFooter() {
         </FooterCol>
 
         <FooterCol code="blck. 03" title="System">
-          <p className="font-mono text-xs leading-relaxed text-black/70">
+          <p className="font-mono text-xs leading-relaxed text-black">
             apple music · spotify · youtube music. no login.
+          </p>
+          <p className="font-mono text-xs leading-relaxed text-black">
+            bpm data by{' '}
+            <a
+              href="https://getsongbpm.com"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="underline underline-offset-2"
+            >
+              getsongbpm.com
+            </a>
           </p>
         </FooterCol>
       </div>
 
+      {/* Site links */}
+      <nav
+        aria-label="Site"
+        className="flex flex-wrap items-center gap-x-5 gap-y-1 border-t border-black/20 px-4 py-2 font-mono text-xs uppercase tracking-[0.12em] sm:px-6"
+      >
+        <Link href="/about" className="underline-offset-2 hover:underline">
+          About
+        </Link>
+        <Link href="/faq" className="underline-offset-2 hover:underline">
+          FAQ
+        </Link>
+        <Link href="/privacy" className="underline-offset-2 hover:underline">
+          Privacy
+        </Link>
+        <Link href="/terms" className="underline-offset-2 hover:underline">
+          Terms
+        </Link>
+        <CookieSettingsButton className="uppercase tracking-[0.12em] underline-offset-2 hover:underline" />
+      </nav>
+
       {/* Bottom bar */}
       <div className="flex flex-wrap items-center justify-between gap-2 border-t border-black/20 px-4 py-1 font-mono text-[11px] uppercase tracking-[0.15em] sm:px-6">
         <span>© 2026 find the tempo</span>
-        <span className="text-black/60">screenshot → links</span>
+        <span>not affiliated with apple, spotify or youtube</span>
       </div>
     </footer>
   )

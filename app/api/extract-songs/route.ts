@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { GoogleAuth } from 'google-auth-library'
+import { rateLimit, LIMITS } from '@/lib/rate-limit'
+import { MAX_IMAGE_BYTES, MAX_FIELD_LENGTH, sniffImageMime } from '@/lib/security'
 
 const OPENROUTER_API_URL = 'https://openrouter.ai/api/v1/chat/completions'
 // Vision model for reading the screenshot. Gemini 2.5 Flash is served by a single
@@ -279,44 +281,53 @@ class UpstreamError extends Error {
   }
 }
 
+const UNAVAILABLE = { error: 'Song detection is temporarily unavailable. Please try again later.' }
+
 export async function POST(req: NextRequest) {
-  // Provider-aware config guard.
+  // Provider-aware config guard. Details go to the server log, never the client.
+  let missing: string | null = null
   if (OCR_PROVIDER === 'vertex') {
     if (!process.env.GOOGLE_SERVICE_ACCOUNT_JSON || !VERTEX_PROJECT) {
-      return NextResponse.json(
-        {
-          error:
-            'Vertex not configured: set GOOGLE_SERVICE_ACCOUNT_JSON and GOOGLE_VERTEX_PROJECT',
-        },
-        { status: 503 }
-      )
+      missing = 'GOOGLE_SERVICE_ACCOUNT_JSON / GOOGLE_VERTEX_PROJECT'
     }
   } else if (OCR_PROVIDER === 'gemini') {
-    if (!process.env.GEMINI_API_KEY) {
-      return NextResponse.json(
-        { error: 'GEMINI_API_KEY is not set (OCR_PROVIDER=gemini)' },
-        { status: 503 }
-      )
-    }
+    if (!process.env.GEMINI_API_KEY) missing = 'GEMINI_API_KEY'
   } else if (!process.env.OPENROUTER_API_KEY) {
-    return NextResponse.json(
-      { error: 'OPENROUTER_API_KEY is not set in .env.local' },
-      { status: 503 }
-    )
+    missing = 'OPENROUTER_API_KEY'
+  }
+  if (missing) {
+    console.error(`[OCR] Provider "${OCR_PROVIDER}" not configured: ${missing}`)
+    return NextResponse.json(UNAVAILABLE, { status: 503 })
+  }
+
+  const limited = await rateLimit(req, LIMITS.extract)
+  if (limited) return limited
+
+  // Reject oversized bodies before buffering them.
+  const declared = Number(req.headers.get('content-length') ?? 0)
+  if (declared > MAX_IMAGE_BYTES + 64 * 1024) {
+    return NextResponse.json({ error: 'Image is too large (10 MB max).' }, { status: 413 })
   }
 
   try {
     const formData = await req.formData()
-    const file = formData.get('image') as File | null
+    const entry = formData.get('image')
 
-    if (!file) {
+    if (!(entry instanceof File)) {
       return NextResponse.json({ error: 'No image file provided' }, { status: 400 })
     }
+    const file = entry
 
-    const validTypes = ['image/png', 'image/jpeg', 'image/webp', 'image/gif']
-    if (!validTypes.includes(file.type)) {
+    if (file.size > MAX_IMAGE_BYTES) {
+      return NextResponse.json({ error: 'Image is too large (10 MB max).' }, { status: 413 })
+    }
+
+    // Trust the file's bytes, not the client-declared MIME type.
+    const buffer = Buffer.from(await file.arrayBuffer())
+    const mimeType = sniffImageMime(buffer)
+    if (!mimeType) {
       return NextResponse.json(
-        { error: 'Invalid file type. Use PNG, JPEG, or WebP.' },
+        { error: 'Invalid file type. Use PNG, JPEG, WebP or GIF.' },
         { status: 400 }
       )
     }
@@ -337,9 +348,7 @@ export async function POST(req: NextRequest) {
       )
     })
 
-    const buffer = Buffer.from(await file.arrayBuffer())
     const base64Image = buffer.toString('base64')
-    const mimeType = file.type
 
     // Abort the upstream model call when the client disconnects
     // (Cancel button / navigation) OR after 25s, whichever comes first.
@@ -354,13 +363,19 @@ export async function POST(req: NextRequest) {
 
     const parsed = parseSongs(rawContent)
     if (parsed === null) {
-      console.error(`[${OCR_PROVIDER}] Unparseable response:`, rawContent)
-      return NextResponse.json({ error: 'Model returned unreadable output' }, { status: 500 })
+      // Don't log rawContent: it is text read from the user's screenshot.
+      console.error(`[${OCR_PROVIDER}] Unparseable model response (${rawContent.length} chars)`)
+      return NextResponse.json({ error: 'Could not read songs from that image.' }, { status: 502 })
     }
 
-    const songs = parsed.filter(
-      (s) => s.name && typeof s.name === 'string' && s.name.trim().length > 0
-    )
+    const songs = parsed
+      .filter((s) => s.name && typeof s.name === 'string' && s.name.trim().length > 0)
+      .slice(0, 200)
+      .map((s) => ({
+        name: s.name.slice(0, MAX_FIELD_LENGTH),
+        artist: typeof s.artist === 'string' ? s.artist.slice(0, MAX_FIELD_LENGTH) : 'Unknown Artist',
+        confidence: typeof s.confidence === 'number' ? s.confidence : 0.75,
+      }))
 
     return NextResponse.json({ songs, count: songs.length })
   } catch (error: any) {
@@ -374,12 +389,19 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Request timed out. Try again.' }, { status: 504 })
     }
     if (error instanceof UpstreamError) {
+      // Upstream status + body (quota, billing, project ids) stay in the server log.
+      const status = error.status === 429 ? 429 : 502
       return NextResponse.json(
-        { error: error.message, detail: error.detail },
-        { status: error.status }
+        {
+          error:
+            status === 429
+              ? 'Song detection is busy right now. Please try again shortly.'
+              : 'Song detection failed. Please try again.',
+        },
+        { status }
       )
     }
     console.error(`[${OCR_PROVIDER}] Unexpected error:`, error)
-    return NextResponse.json({ error: error.message || 'Internal server error' }, { status: 500 })
+    return NextResponse.json({ error: 'Something went wrong. Please try again.' }, { status: 500 })
   }
 }

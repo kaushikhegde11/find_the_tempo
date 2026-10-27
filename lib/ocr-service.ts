@@ -8,8 +8,6 @@ export async function extractSongsFromScreenshot(
   imageFile: File,
   signal?: AbortSignal
 ): Promise<Song[]> {
-  console.log('[OCR] Processing image:', imageFile.name)
-
   const formData = new FormData()
   formData.append('image', imageFile)
 
@@ -21,13 +19,15 @@ export async function extractSongsFromScreenshot(
 
   if (!response.ok) {
     const err = await response.json().catch(() => ({ error: 'Unknown error' }))
-    throw new Error(`OCR failed: ${err.error || response.statusText}`)
+    if (response.status === 429) {
+      throw new Error('You have reached the upload limit for now. Please try again in a while.')
+    }
+    throw new Error(err.error || response.statusText || 'Something went wrong')
   }
 
   const data = await response.json()
 
   if (!data.songs || data.songs.length === 0) {
-    console.warn('[OCR] No songs detected in screenshot')
     return []
   }
 
@@ -40,7 +40,6 @@ export async function extractSongsFromScreenshot(
     fromScreenshot: imageFile.name,
   }))
 
-  console.log(`[OCR] Detected ${songs.length} songs`)
   return songs
 }
 

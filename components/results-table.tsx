@@ -250,10 +250,14 @@ export function ResultsTable({ songs, platform, onEdit, onDelete }: ResultsTable
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-border bg-muted/50">
-              <th className="px-4 py-3 text-left font-medium text-muted-foreground w-12" />
+              <th className="px-4 py-3 text-left font-medium text-muted-foreground w-12">
+                <span className="sr-only">Artwork</span>
+              </th>
               <th className="px-4 py-3 text-left font-medium text-muted-foreground">Song</th>
               <th className="px-4 py-3 text-left font-medium text-muted-foreground">Artist</th>
               <th className="px-4 py-3 text-left font-medium text-muted-foreground">Album</th>
+              <th className="px-4 py-3 text-left font-medium text-muted-foreground">Genre</th>
+              <th className="px-4 py-3 text-left font-medium text-muted-foreground">BPM</th>
               <th className="px-4 py-3 text-right font-medium text-muted-foreground">
                 {SERVICE_NAME[platform]}
               </th>
@@ -272,7 +276,11 @@ export function ResultsTable({ songs, platform, onEdit, onDelete }: ResultsTable
                       {artwork ? (
                         <img
                           src={artwork}
-                          alt={trackName(song)}
+                          alt=""
+                          width={40}
+                          height={40}
+                          loading="lazy"
+                          decoding="async"
                           className="h-10 w-10 rounded object-cover"
                         />
                       ) : (
@@ -285,10 +293,11 @@ export function ResultsTable({ songs, platform, onEdit, onDelete }: ResultsTable
                           onClick={() => togglePreview(song)}
                           className={cn(
                             'absolute inset-0 flex items-center justify-center rounded',
-                            'bg-black/50 opacity-0 hover:opacity-100 transition-opacity',
+                            'bg-black/50 opacity-0 hover:opacity-100 focus-visible:opacity-100 transition-opacity',
                             playingId === song.id && 'opacity-100'
                           )}
                           title={playingId === song.id ? 'Pause preview' : 'Play preview'}
+                          aria-label={`${playingId === song.id ? 'Pause' : 'Play'} preview of ${trackName(song)}`}
                         >
                           {playingId === song.id ? (
                             <Pause className="h-4 w-4 text-white" />
@@ -312,7 +321,8 @@ export function ResultsTable({ songs, platform, onEdit, onDelete }: ResultsTable
                           if (e.key === 'Escape') cancelEdit()
                         }}
                         placeholder="Song name"
-                        className="w-full rounded border border-border bg-background px-2 py-1 focus:outline-none focus:ring-2 focus:ring-primary/20"
+                        aria-label="Song name"
+                        className="w-full rounded border border-border bg-background px-2 py-1 focus:outline-none focus:ring-2 focus:ring-primary"
                       />
                     ) : (
                       <span className="text-foreground font-medium">{trackName(song)}</span>
@@ -330,7 +340,8 @@ export function ResultsTable({ songs, platform, onEdit, onDelete }: ResultsTable
                           if (e.key === 'Escape') cancelEdit()
                         }}
                         placeholder="Artist"
-                        className="w-full rounded border border-border bg-background px-2 py-1 text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20"
+                        aria-label="Artist"
+                        className="w-full rounded border border-border bg-background px-2 py-1 text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
                       />
                     ) : (
                       artistName(song)
@@ -339,7 +350,17 @@ export function ResultsTable({ songs, platform, onEdit, onDelete }: ResultsTable
 
                   {/* Album */}
                   <td className="px-4 py-3 text-muted-foreground">
-                    {albumName(song) || <span className="text-muted-foreground/50">—</span>}
+                    {albumName(song) || <span className="text-muted-foreground">—</span>}
+                  </td>
+
+                  {/* Genre */}
+                  <td className="px-4 py-3 text-muted-foreground">
+                    {song.genre || <span className="text-muted-foreground">—</span>}
+                  </td>
+
+                  {/* BPM */}
+                  <td className="px-4 py-3 text-muted-foreground">
+                    {song.bpm ?? <span className="text-muted-foreground">—</span>}
                   </td>
 
                   {/* Link + copy actions */}
@@ -377,7 +398,7 @@ export function ResultsTable({ songs, platform, onEdit, onDelete }: ResultsTable
                           <ExternalLink className="h-3.5 w-3.5" />
                         </a>
                       ) : (
-                        <span className="text-xs text-muted-foreground/60">
+                        <span className="text-xs text-muted-foreground">
                           Not found on {SERVICE_NAME[platform]}
                         </span>
                       )}
@@ -445,6 +466,20 @@ export function ResultsTable({ songs, platform, onEdit, onDelete }: ResultsTable
           {foundCount}/{songs.length} on {SERVICE_NAME[platform]}
         </span>
       </div>
+
+      <p className="text-xs text-muted-foreground">
+        BPM data from{' '}
+        <a
+          href="https://getsongbpm.com"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="underline underline-offset-2"
+        >
+          GetSongBPM
+        </a>
+        . Song matches, artwork and previews from Apple. Not affiliated with Apple, Spotify or
+        YouTube.
+      </p>
 
       {/* Delete confirmation */}
       <AlertDialog open={!!confirmSong} onOpenChange={(open) => !open && setConfirmSong(null)}>

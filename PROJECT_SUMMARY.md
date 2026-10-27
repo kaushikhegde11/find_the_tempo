@@ -17,7 +17,8 @@ Upload a screenshot of any song list (from a music app, a story, a review, anywh
 - **UI Components**: shadcn/ui + Radix
 - **State Management**: React Context API
 - **Icons**: Lucide React
-- **Vision model**: Google Gemini 2.5 Flash via OpenRouter (screenshot → songs)
+- **Vision model**: Google Gemini `gemini-3.5-flash-lite` via **Vertex AI** (screenshot → songs);
+  provider is switchable (`OCR_PROVIDER`: vertex / gemini / openrouter — see Environment)
 - **Music lookup**: public iTunes Search API (Apple Music, no auth)
 - **Analytics**: Google Analytics 4 via `@next/third-parties` (prod-gated)
 - **Hosting**: Netlify (Next Runtime; live at `findthetempo.netlify.app`)
@@ -92,10 +93,27 @@ lib/
 
 ## Environment (`.env.local`)
 
-Required:
-- `OPENROUTER_API_KEY` — for the vision model.
-- `QWEN_MODEL` / `VISION_MODEL` — optional override (default `google/gemini-2.5-flash`).
-- `NEXT_PUBLIC_APP_URL` — used as HTTP-Referer for OpenRouter.
+### OCR provider
+
+`OCR_PROVIDER` selects which upstream reads the screenshot (`app/api/extract-songs/route.ts`):
+
+- **`vertex`** (current prod) — Vertex AI `generateContent` on the **global** endpoint,
+  auth via a service-account OAuth token. Billed to the project's Cloud Billing account,
+  so it **spends GCP credits**. Requires:
+  - `GOOGLE_SERVICE_ACCOUNT_JSON` — full service-account key JSON (one line). SA needs the
+    **Vertex AI User** (`roles/aiplatform.user`) role; the Vertex AI API must be enabled.
+  - `GOOGLE_VERTEX_PROJECT` — GCP project id (e.g. `gen-lang-client-0653784256`).
+  - `GOOGLE_VERTEX_LOCATION` — default `global` (Gemini 3.x is served from `global`).
+- **`gemini`** — Google AI Studio Gemini API via `GEMINI_API_KEY`. Separate *prepay* wallet,
+  NOT the GCP trial credits — will 429 if that project's prepay balance is empty.
+- **`openrouter`** (default / fallback) — OpenRouter. Requires `OPENROUTER_API_KEY`,
+  `NEXT_PUBLIC_APP_URL` (HTTP-Referer). Model via `QWEN_MODEL` (default `google/gemini-2.5-flash`).
+
+Model id for the Google paths: `GEMINI_MODEL` (default `gemini-3.5-flash-lite`).
+Roll back instantly by flipping `OCR_PROVIDER` back to `openrouter`.
+
+### Other
+
 - `NEXT_PUBLIC_GA_ID` — Google Analytics 4 measurement ID (`G-EMTQ7S4FWX`).
   GA is prod-gated, so it only fires in production builds (never on localhost).
 
@@ -115,4 +133,5 @@ npm run dev   # http://localhost:3000
 ## Notes
 
 - Apple links require no key (public iTunes API); Spotify/YouTube links need no key either (search URLs). Only the screenshot read needs OpenRouter credit.
-- No auth, no database, no playlist writes — nothing leaves the user's browser except the screenshot (to the vision model) and song terms (to iTunes).
+- No auth, no database, no playlist writes. Outside the browser, data goes only to: the vision model (screenshot), iTunes Search (song terms), GetSongBPM (song terms, server-side, key in `GETSONGBPM_API_KEY`), Google Analytics (only after cookie consent), and Netlify Blobs (hashed-IP rate-limit counters, swept daily).
+- Security/compliance: security headers + CSP in `next.config.mjs`; API input limits and per-IP rate limits in `lib/security.ts` and `lib/rate-limit.ts`; consent-gated GA in `components/cookie-consent.tsx`; legal pages at `/privacy` and `/terms`; SEO in `app/{robots,sitemap,manifest,opengraph-image}` plus per-page metadata and JSON-LD.

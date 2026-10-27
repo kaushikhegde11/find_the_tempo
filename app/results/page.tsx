@@ -17,6 +17,26 @@ import {
 import { useAppContext } from '@/lib/context'
 import { Song } from '@/lib/types'
 
+// Apple-lookup and BPM-lookup run in parallel and each return a full song
+// object built from a snapshot that predates the other's result. Merge only
+// the defined keys from a lookup response so neither overwrites fields the
+// other already filled in with `undefined`.
+function mergeDefined(base: Song, patch: Song): Song {
+  const result: Song = { ...base }
+  for (const [key, value] of Object.entries(patch)) {
+    if (value !== undefined) (result as any)[key] = value
+  }
+  return result
+}
+
+function mergeSongsById(prev: Song[], patched: Song[]): Song[] {
+  const byId = new Map(patched.map((s) => [s.id, s]))
+  return prev.map((s) => {
+    const patch = byId.get(s.id)
+    return patch ? mergeDefined(s, patch) : s
+  })
+}
+
 export default function ResultsPage() {
   const router = useRouter()
   const { songs, setSongs, selectedPlatforms } = useAppContext()
@@ -31,8 +51,9 @@ export default function ResultsPage() {
   const songsRef = useRef(songs)
   songsRef.current = songs
 
-  // Consider enriched once any song has an Apple link.
+  // Consider enriched once any song has an Apple link / a BPM value.
   const alreadyEnriched = songs.some((s) => s.appleMusicUrl)
+  const alreadyHasBpm = songs.some((s) => s.bpm !== undefined)
 
   // Re-run the Apple lookup for a single (edited) song and merge the result.
   const applyApple = async (target: Song) => {
@@ -44,13 +65,29 @@ export default function ResultsPage() {
       })
       if (!res.ok) return
       const enriched = (await res.json()).songs?.[0] as Song | undefined
-      if (enriched) setSongs(songsRef.current.map((s) => (s.id === target.id ? enriched : s)))
+      if (enriched) setSongs(mergeSongsById(songsRef.current, [enriched]))
     } catch {
       /* keep the cleared song with key-free search links */
     }
   }
 
-  // Edit a song's name/artist: clear stale link data, then re-look-up Apple.
+  // Re-run the BPM lookup for a single (edited) song and merge the result.
+  const applyBpm = async (target: Song) => {
+    try {
+      const res = await fetch('/api/bpm/search', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ songs: [target] }),
+      })
+      if (!res.ok) return
+      const enriched = (await res.json()).songs?.[0] as Song | undefined
+      if (enriched) setSongs(mergeSongsById(songsRef.current, [enriched]))
+    } catch {
+      /* BPM is a nice-to-have — leave it unset on failure */
+    }
+  }
+
+  // Edit a song's name/artist: clear stale link data, then re-look-up Apple + BPM.
   const handleEdit = (id: string, name: string, artist: string) => {
     const base = songsRef.current.find((s) => s.id === id)
     if (!base) return
@@ -66,9 +103,12 @@ export default function ResultsPage() {
       applePreviewUrl: undefined,
       spotifyTrackId: undefined,
       previewUrl: undefined,
+      genre: undefined,
+      bpm: undefined,
     }
     setSongs(songsRef.current.map((s) => (s.id === id ? cleared : s)))
     applyApple(cleared)
+    applyBpm(cleared)
   }
 
   const handleDelete = (id: string) => {
@@ -82,8 +122,10 @@ export default function ResultsPage() {
     setLoading(true)
     setError(null)
 
-    // Only Apple Music needs a lookup (exact links + previews). Spotify and
-    // YouTube Music use key-free search links built client-side in the table.
+    // Only Apple Music needs a lookup (exact links + previews, plus genre).
+    // Spotify and YouTube Music use key-free search links built client-side
+    // in the table. BPM comes from a separate GetSongBPM lookup that runs in
+    // parallel — it's a nice-to-have, so its failure doesn't surface `error`.
     fetch('/api/apple-music/search', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -92,7 +134,7 @@ export default function ResultsPage() {
       .then(async (res) => {
         if (!res.ok) throw new Error(`Search failed (${res.status})`)
         const data = await res.json()
-        if (!cancelled) setSongs(data.songs as Song[])
+        if (!cancelled) setSongs(mergeSongsById(songsRef.current, data.songs as Song[]))
       })
       .catch((err) => {
         if (!cancelled) setError(err.message || 'Something went wrong')
@@ -107,9 +149,34 @@ export default function ResultsPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
+  useEffect(() => {
+    if (songs.length === 0 || alreadyHasBpm) return
+
+    let cancelled = false
+
+    fetch('/api/bpm/search', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ songs }),
+    })
+      .then(async (res) => {
+        if (!res.ok) return
+        const data = await res.json()
+        if (!cancelled) setSongs(mergeSongsById(songsRef.current, data.songs as Song[]))
+      })
+      .catch(() => {
+        /* BPM is a nice-to-have — leave it unset on failure */
+      })
+
+    return () => {
+      cancelled = true
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
   if (songs.length === 0) {
     return (
-      <main className="min-h-screen bg-gradient-to-b from-background to-muted/30 flex items-center justify-center">
+      <main id="main-content" className="min-h-screen bg-gradient-to-b from-background to-muted/30 flex items-center justify-center">
         <div className="text-center space-y-4">
           <h1 className="text-2xl font-bold text-foreground">No songs yet</h1>
           <p className="text-muted-foreground">Upload screenshots first</p>
@@ -126,7 +193,7 @@ export default function ResultsPage() {
   }
 
   return (
-    <main className="flex min-h-screen flex-col bg-background text-foreground">
+    <main id="main-content" className="flex min-h-screen flex-col bg-background text-foreground">
       {/* Faceplate card — same device frame as the landing page, 10px page padding */}
       <section className="flex w-full flex-1 flex-col px-2.5 py-2.5">
         <div className="flex flex-1 flex-col overflow-hidden rounded-[11px] border border-border bg-card shadow-sm">

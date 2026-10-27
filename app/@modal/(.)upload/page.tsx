@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect } from 'react'
+import { useEffect, useRef } from 'react'
 import { useRouter, usePathname } from 'next/navigation'
 import { X } from 'lucide-react'
 import { UploadFlow } from '@/components/upload-flow'
@@ -15,14 +15,43 @@ export default function UploadModal() {
   const router = useRouter()
   const pathname = usePathname()
   const close = () => router.back()
+  const dialogRef = useRef<HTMLDivElement>(null)
 
-  // Close on Escape.
+  // Escape closes; Tab is kept inside the dialog; focus moves in on open and
+  // returns to whatever opened it on close.
   useEffect(() => {
+    const opener = document.activeElement as HTMLElement | null
+    dialogRef.current?.focus()
+
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') close()
+      if (e.key === 'Escape') {
+        close()
+        return
+      }
+      if (e.key !== 'Tab' || !dialogRef.current) return
+      const focusable = dialogRef.current.querySelectorAll<HTMLElement>(
+        'a[href], button:not([disabled]), input:not([disabled]), [tabindex]:not([tabindex="-1"])'
+      )
+      if (focusable.length === 0) {
+        e.preventDefault()
+        return
+      }
+      const first = focusable[0]
+      const last = focusable[focusable.length - 1]
+      const active = document.activeElement
+      if (e.shiftKey && (active === first || active === dialogRef.current)) {
+        e.preventDefault()
+        last.focus()
+      } else if (!e.shiftKey && active === last) {
+        e.preventDefault()
+        first.focus()
+      }
     }
     window.addEventListener('keydown', onKey)
-    return () => window.removeEventListener('keydown', onKey)
+    return () => {
+      window.removeEventListener('keydown', onKey)
+      opener?.focus?.()
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
@@ -39,11 +68,13 @@ export default function UploadModal() {
       {/* Centered card — fixed footprint; inner content scrolls so the card and
           close button never move between the upload and processing states. */}
       <div
+        ref={dialogRef}
+        tabIndex={-1}
         onClick={(e) => e.stopPropagation()}
         role="dialog"
         aria-modal="true"
         aria-label="Upload your screenshots"
-        className="relative flex max-h-[85vh] w-full max-w-xl flex-col rounded-2xl border border-border bg-card p-6 shadow-2xl backdrop-blur-md sm:p-10"
+        className="relative flex max-h-[85vh] outline-none w-full max-w-xl flex-col rounded-2xl border border-border bg-card p-6 shadow-2xl backdrop-blur-md sm:p-10"
       >
         <button
           type="button"
@@ -56,7 +87,7 @@ export default function UploadModal() {
         </button>
 
         <div className="min-h-0 flex-1 overflow-y-auto">
-          <UploadFlow />
+          <UploadFlow headingLevel={2} />
         </div>
       </div>
     </div>

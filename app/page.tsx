@@ -1,6 +1,21 @@
+import type { Metadata } from 'next'
 import Link from 'next/link'
 import { ArrowRight, ImageUp, ScanLine, Link2 } from 'lucide-react'
 import { SiteFooter } from '@/components/site-footer'
+import { JsonLd } from '@/components/json-ld'
+import { AUTHOR_NAME, SITE_DESCRIPTION, SITE_NAME, SITE_URL } from '@/lib/site'
+
+export const metadata: Metadata = {
+  alternates: { canonical: '/' },
+  openGraph: {
+    type: 'website',
+    siteName: SITE_NAME,
+    title: `${SITE_NAME}: screenshot to song links and BPM`,
+    description: SITE_DESCRIPTION,
+    url: '/',
+    locale: 'en_US',
+  },
+}
 
 const STEPS = [
   { n: '01', icon: ImageUp, label: 'Upload screenshot', hint: 'any tracklist image' },
@@ -15,9 +30,33 @@ function Node({ className = '' }: { className?: string }) {
 
 export default function LandingPage() {
   return (
-    <main className="flex min-h-[calc(100svh-3.5rem)] flex-col bg-background text-foreground">
+    <main id="main-content" className="flex min-h-[calc(100svh-3.5rem)] flex-col bg-background text-foreground">
+      <JsonLd
+        data={{
+          '@context': 'https://schema.org',
+          '@graph': [
+            {
+              '@type': 'WebSite',
+              name: SITE_NAME,
+              url: SITE_URL,
+            },
+            {
+              '@type': 'WebApplication',
+              name: SITE_NAME,
+              url: SITE_URL,
+              description: SITE_DESCRIPTION,
+              applicationCategory: 'MultimediaApplication',
+              operatingSystem: 'Any (web browser)',
+              browserRequirements: 'Requires JavaScript',
+              offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
+              author: { '@type': 'Person', name: AUTHOR_NAME },
+            },
+          ],
+        }}
+      />
+
       {/* Hero — device faceplate on a blueprint grid */}
-      <section className="flex w-full flex-1 flex-col px-2.5 py-2.5">
+      <section className="flex min-h-[calc(100svh-3.5rem)] w-full flex-col px-2.5 py-2.5">
         <div className="flex flex-1 flex-col overflow-hidden rounded-lg border border-border bg-card shadow-sm">
           {/* Faceplate header strip */}
           <div className="flex items-center justify-end border-b border-border px-4 py-2 font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground sm:px-6">
@@ -57,6 +96,7 @@ export default function LandingPage() {
 
           {/* Steps — STP numbered cards with arrows, centered near the bottom */}
           <div className="border-t border-border px-4 py-4 sm:px-5">
+            <h2 className="sr-only">How it works</h2>
             <div className="mx-auto flex max-w-3xl flex-col items-stretch gap-2 sm:flex-row sm:items-center">
               {STEPS.map((step, i) => {
                 const Icon = step.icon
@@ -71,7 +111,7 @@ export default function LandingPage() {
                         <Icon className="h-3.5 w-3.5" strokeWidth={2} />
                       </span>
                       <div>
-                        <div className="text-xs font-semibold">{step.label}</div>
+                        <h3 className="text-xs font-semibold">{step.label}</h3>
                         <div className="font-mono text-[9px] uppercase tracking-wide text-muted-foreground">
                           {step.hint}
                         </div>
@@ -88,6 +128,59 @@ export default function LandingPage() {
               })}
             </div>
           </div>
+        </div>
+      </section>
+
+      {/* Below the fold — plain-language copy for people and search engines */}
+      <section aria-labelledby="about-heading" className="px-2.5 pb-2.5">
+        <div className="mx-auto max-w-3xl rounded-lg border border-border bg-card px-5 py-8 sm:px-8">
+          <h2 id="about-heading" className="text-2xl font-bold tracking-tight">
+            Find the tempo of any tracklist screenshot
+          </h2>
+          <p className="mt-3 text-[15px] leading-relaxed">
+            A DJ shares a set list on a story. A friend sends a playlist as a picture. You cannot tap
+            a picture. Upload the screenshot here and every song is read, matched and given a link on
+            Apple Music, Spotify and YouTube Music, along with its tempo in BPM when one is known.
+            No login, nothing added to your music account.
+          </p>
+
+          <h2 className="mt-8 text-2xl font-bold tracking-tight">Quick answers</h2>
+          <dl className="mt-3 space-y-4 text-[15px] leading-relaxed">
+            <div>
+              <dt className="font-semibold">What kind of screenshot works?</dt>
+              <dd className="text-muted-foreground">
+                Any clear image of a song list, up to 10 MB, in PNG, JPEG, WebP or GIF.
+              </dd>
+            </div>
+            <div>
+              <dt className="font-semibold">Is my screenshot saved?</dt>
+              <dd className="text-muted-foreground">
+                No. It is sent to an AI service to be read and is not kept by this site.
+              </dd>
+            </div>
+            <div>
+              <dt className="font-semibold">Where does the BPM come from?</dt>
+              <dd className="text-muted-foreground">
+                From the GetSongBPM database. Some songs are missing, so check by ear if it matters.
+              </dd>
+            </div>
+          </dl>
+          <p className="mt-4 text-[15px]">
+            More in the{' '}
+            <Link href="/faq" className="underline underline-offset-2">
+              FAQ
+            </Link>
+            .
+          </p>
+
+          <h2 className="mt-8 text-2xl font-bold tracking-tight">Made by</h2>
+          <p className="mt-3 text-[15px] leading-relaxed">
+            Find the tempo is built and maintained by {AUTHOR_NAME}.{' '}
+            <Link href="/about" className="underline underline-offset-2">
+              Read the story behind it
+            </Link>
+            .
+          </p>
         </div>
       </section>
 

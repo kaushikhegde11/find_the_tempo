@@ -1,43 +1,40 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { searchAppleMusic } from '@/lib/apple-music-api'
+import { rateLimit, LIMITS } from '@/lib/rate-limit'
+import { parseSongsBody } from '@/lib/security'
 
 /**
  * POST /api/apple-music/search
- * Body: { songs: Array<{ id; originalName; artist; ... }> }
+ * Body: { songs: Array<{ id; originalName; artist; ... }> }  (max 50)
  *
  * Returns the songs array enriched with Apple Music link + preview
  * (via the public iTunes Search API — no auth needed).
  */
 export async function POST(req: NextRequest) {
-  try {
-    const body = await req.json()
-    const songs: Array<{ originalName: string; artist: string; [k: string]: any }> =
-      body.songs
+  const limited = await rateLimit(req, LIMITS.lookup)
+  if (limited) return limited
 
-    if (!Array.isArray(songs)) {
-      return NextResponse.json({ error: 'songs must be an array' }, { status: 400 })
-    }
+  try {
+    const parsed = parseSongsBody(await req.json())
+    if ('error' in parsed) return parsed.error
 
     const results = await Promise.all(
-      songs.map(async (song) => {
+      parsed.songs.map(async (song) => {
         try {
           const match = await searchAppleMusic(song.artist, song.originalName)
           if (match) {
             return { ...song, ...match }
           }
         } catch (err) {
-          console.warn(`[Apple Music] Failed for "${song.originalName}":`, err)
+          console.warn('[Apple Music] Lookup failed:', err)
         }
         return song
       })
     )
 
     return NextResponse.json({ songs: results })
-  } catch (error: any) {
+  } catch (error) {
     console.error('[Apple Music Search API]', error)
-    return NextResponse.json(
-      { error: error.message || 'Internal server error' },
-      { status: 500 }
-    )
+    return NextResponse.json({ error: 'Something went wrong. Please try again.' }, { status: 500 })
   }
 }

@@ -10,6 +10,7 @@ export interface AppleMusicMatch {
   appleArtist: string
   appleAlbum?: string
   appleArtwork?: string
+  genre?: string
 }
 
 interface ITunesResult {
@@ -20,6 +21,7 @@ interface ITunesResult {
   collectionName?: string
   artworkUrl100?: string
   kind?: string
+  primaryGenreName?: string
 }
 
 /**
@@ -72,5 +74,6 @@ export async function searchAppleMusic(
     appleArtist: best.artistName || artist,
     appleAlbum: best.collectionName,
     appleArtwork: best.artworkUrl100,
+    genre: best.primaryGenreName,
   }
 }

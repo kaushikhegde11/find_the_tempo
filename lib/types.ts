@@ -15,6 +15,8 @@ export interface Song {
   appleArtist?: string
   appleAlbum?: string
   appleArtwork?: string
+  genre?: string
+  bpm?: number
 }
 
 export interface PlaylistData {

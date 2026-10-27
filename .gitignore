@@ -6,10 +6,17 @@ __v0_jsx-dev-runtime.ts
 .v0-trash/
 .vercel/
 
-# Environment variables
-.env*.local
+# Environment variables (keep .env.example)
+.env
+.env.*
+!.env.example
 
 # Common ignores
 node_modules
 .next/
 .DS_Store
+*.tsbuildinfo
+
+# Local tooling and scratch output
+.claude/
+undefined/

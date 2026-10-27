@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
+import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { UploadZone } from '@/components/upload-zone'
 import { ProcessingState } from '@/components/processing-state'
@@ -14,7 +15,9 @@ import { extractSongsFromScreenshot, validateImage } from '@/lib/ocr-service'
  * inside the intercepting modal. Aborts any in-flight scan when it unmounts
  * (e.g. the modal closes or the user navigates home).
  */
-export function UploadFlow() {
+// The modal overlays a page that already has an h1, so it passes headingLevel=2.
+export function UploadFlow({ headingLevel = 1 }: { headingLevel?: 1 | 2 } = {}) {
+  const Heading = headingLevel === 1 ? 'h1' : 'h2'
   const router = useRouter()
   const { setSongs, selectedPlatforms, setSelectedPlatforms } = useAppContext()
   const [isProcessing, setIsProcessing] = useState(false)
@@ -128,22 +131,31 @@ export function UploadFlow() {
       />
 
       <div className="space-y-3 text-center">
-        <h1 className="text-2xl font-bold text-foreground sm:text-3xl">
+        <Heading className="text-2xl font-bold text-foreground sm:text-3xl">
           Upload Your Screenshots
-        </h1>
+        </Heading>
         <p className="text-sm text-muted-foreground sm:text-base">
           Drop your song list screenshots below, and we&apos;ll extract all the songs automatically.
         </p>
       </div>
 
       {error && (
-        <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-800 dark:bg-red-950 dark:text-red-300">
+        <div role="alert" className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-800 dark:bg-red-950 dark:text-red-300">
           {error}
         </div>
       )}
 
       {!isProcessing && uploadedFiles.length === 0 ? (
-        <UploadZone onFilesSelected={handleFilesSelected} isProcessing={isProcessing} />
+        <>
+          <UploadZone onFilesSelected={handleFilesSelected} isProcessing={isProcessing} />
+          <p className="text-center text-xs text-muted-foreground">
+            Your screenshot is read by an AI service and is not saved by this site. Crop out
+            anything private first.{' '}
+            <Link href="/privacy" className="underline underline-offset-2" target="_blank">
+              Privacy policy
+            </Link>
+          </p>
+        </>
       ) : null}
 
       {isProcessing && (
@@ -159,7 +171,7 @@ export function UploadFlow() {
             />
           </div>
 
-          <p className="text-center text-sm text-muted-foreground">
+          <p role="status" className="text-center text-sm text-muted-foreground">
             Processing {uploadedFiles.length} screenshot{uploadedFiles.length !== 1 ? 's' : ''}...
           </p>
         </div>

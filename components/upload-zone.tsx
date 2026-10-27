@@ -80,7 +80,8 @@ export function UploadZone({
         accept="image/png,image/jpeg,image/webp"
         onChange={handleChange}
         disabled={disabled || isProcessing}
-        className="absolute inset-0 z-0 cursor-pointer opacity-0"
+        aria-label="Choose screenshots to upload"
+        className="absolute inset-0 z-0 cursor-pointer opacity-0 focus-visible:opacity-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
       />
 
       <div className="flex flex-col items-center gap-4">
@@ -91,9 +92,9 @@ export function UploadZone({
         </div>
 
         <div className="space-y-2">
-          <h3 className="text-lg font-semibold text-foreground">
+          <h2 className="text-lg font-semibold text-foreground">
             {isDragActive ? 'Drop your screenshots here' : 'Upload song screenshots'}
-          </h3>
+          </h2>
           <p className="text-sm text-muted-foreground">
             Drag and drop PNG, JPEG, or WebP images, or click to browse
           </p>

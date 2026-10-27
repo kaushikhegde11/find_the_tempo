@@ -16,7 +16,7 @@ export function ErrorScreen({
   actions: React.ReactNode
 }) {
   return (
-    <main className="flex min-h-screen flex-col bg-background text-foreground">
+    <main id="main-content" className="flex min-h-screen flex-col bg-background text-foreground">
       <section className="flex flex-1 items-center justify-center px-2.5 py-2.5">
         <div className="w-full max-w-lg overflow-hidden rounded-[11px] border border-border bg-card shadow-sm">
           {/* Faceplate header strip */}
@@ -40,7 +40,7 @@ export function ErrorScreen({
                 {message}
               </p>
               {code && (
-                <p className="mt-3 font-mono text-[10px] uppercase tracking-widest text-muted-foreground/60">
+                <p className="mt-3 font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
                   ref {code}
                 </p>
               )}
