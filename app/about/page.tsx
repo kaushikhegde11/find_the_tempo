@@ -14,7 +14,6 @@ export const metadata: Metadata = {
 export default function AboutPage() {
   return (
     <ContentPage
-      code="blck. about"
       title="About Find the tempo"
       path="/about"
       intro="A small tool for people who keep finding songs in screenshots."

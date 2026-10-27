@@ -14,7 +14,6 @@ export const metadata: Metadata = {
 export default function PrivacyPage() {
   return (
     <ContentPage
-      code="blck. privacy"
       title="Privacy policy"
       path="/privacy"
       intro="Plain-language summary: no accounts, no ads, no selling of data. Your screenshot goes to an AI service to be read, and analytics run only if you allow them."

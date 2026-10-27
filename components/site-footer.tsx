@@ -2,29 +2,20 @@ import Link from 'next/link'
 import { Instagram, Music, Newspaper } from 'lucide-react'
 import { CookieSettingsButton } from '@/components/cookie-consent'
 
-// Small filled square used as a grid node marker.
-function Node({ className = '' }: { className?: string }) {
-  return <span className={`te-node ${className}`} aria-hidden />
-}
-
 // Structured orange footer block — shared by the landing and results screens.
 export function SiteFooter() {
   return (
     <footer className="bg-primary text-black">
       {/* link columns */}
       <div className="grid grid-cols-1 divide-y divide-black/20 border-y border-black/20 sm:grid-cols-3 sm:divide-x sm:divide-y-0">
-        {/* BLCK.01 — wordmark contained in the box */}
-        <div className="relative flex flex-col overflow-hidden px-5 py-1.5">
-          <Node className="absolute right-3 top-3 !bg-black" />
-          <div className="mb-2 font-mono text-xs font-semibold uppercase tracking-widest">
-            blck. 01
-          </div>
-          <span className="block break-words font-bold leading-[0.85] tracking-tighter text-[clamp(1.75rem,5vw,3rem)]">
+        {/* Wordmark */}
+        <div className="relative flex flex-col overflow-hidden px-5 py-4">
+          <span className="block break-words font-bold leading-none tracking-tight text-[clamp(1.75rem,5vw,3rem)]">
             find the tempo
           </span>
         </div>
 
-        <FooterCol code="blck. 02" title="Follow" align="center">
+        <FooterCol title="Follow" align="center">
           <FooterLink href="https://music.apple.com/profile/musicforkaey" icon={<Music className="h-4 w-4" />}>
             Apple Music
           </FooterLink>
@@ -39,7 +30,7 @@ export function SiteFooter() {
           </FooterLink>
         </FooterCol>
 
-        <FooterCol code="blck. 03" title="System">
+        <FooterCol title="System">
           <p className="font-mono text-xs leading-relaxed text-black">
             apple music · spotify · youtube music. no login.
           </p>
@@ -76,21 +67,17 @@ export function SiteFooter() {
 }
 
 function FooterCol({
-  code,
   title,
   children,
   align = 'start',
 }: {
-  code: string
   title: string
   children: React.ReactNode
   align?: 'start' | 'end' | 'center'
 }) {
   const alignCls = align === 'end' ? 'items-end' : align === 'center' ? 'items-center' : 'items-start'
   return (
-    <div className="relative px-5 py-1.5">
-      <Node className="absolute right-3 top-3 !bg-black" />
-      <div className="mb-2 font-mono text-xs font-semibold uppercase tracking-widest">{code}</div>
+    <div className="px-5 py-4">
       <div className="mb-2 text-lg font-bold">{title}</div>
       <div className={`flex flex-col gap-2 ${alignCls}`}>{children}</div>
     </div>

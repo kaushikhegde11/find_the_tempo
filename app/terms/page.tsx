@@ -13,7 +13,6 @@ export const metadata: Metadata = {
 export default function TermsPage() {
   return (
     <ContentPage
-      code="blck. terms"
       title="Terms of use"
       path="/terms"
       intro="Using Find the tempo means you agree to these short terms."

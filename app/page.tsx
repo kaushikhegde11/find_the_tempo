@@ -18,15 +18,10 @@ export const metadata: Metadata = {
 }
 
 const STEPS = [
-  { n: '01', icon: ImageUp, label: 'Upload screenshot', hint: 'any tracklist image' },
-  { n: '02', icon: ScanLine, label: 'Detect songs', hint: 'names & artists, read for you' },
-  { n: '03', icon: Link2, label: 'Get links', hint: 'apple · spotify · youtube' },
+  { icon: ImageUp, label: 'Upload screenshot', hint: 'any tracklist image' },
+  { icon: ScanLine, label: 'Detect songs', hint: 'names & artists, read for you' },
+  { icon: Link2, label: 'Get links', hint: 'apple · spotify · youtube' },
 ]
-
-// Small filled square used as a grid node marker.
-function Node({ className = '' }: { className?: string }) {
-  return <span className={`te-node ${className}`} aria-hidden />
-}
 
 export default function LandingPage() {
   return (
@@ -69,11 +64,6 @@ export default function LandingPage() {
 
           {/* Hero body — blueprint canvas */}
           <div className="relative flex flex-1 flex-col justify-center te-dotgrid px-6 py-6 text-center sm:px-10">
-            {/* corner nodes */}
-            <Node className="absolute left-3 top-3" />
-            <Node className="absolute right-3 top-3" />
-            <Node className="absolute bottom-3 left-3" />
-            <Node className="absolute bottom-3 right-3" />
             <div className="relative mx-auto max-w-3xl rounded-md bg-card px-5 py-5">
               <h1 className="text-balance text-4xl font-bold tracking-tight sm:text-6xl">
                 Convert screenshots into findable links
@@ -94,19 +84,15 @@ export default function LandingPage() {
             </div>
           </div>
 
-          {/* Steps — STP numbered cards with arrows, centered near the bottom */}
+          {/* Steps — icons and arrows show the upload-to-links sequence */}
           <div className="border-t border-border px-4 py-4 sm:px-5">
             <h2 className="sr-only">How it works</h2>
             <div className="mx-auto flex max-w-3xl flex-col items-stretch gap-2 sm:flex-row sm:items-center">
               {STEPS.map((step, i) => {
                 const Icon = step.icon
                 return (
-                  <div key={step.n} className="contents">
+                  <div key={step.label} className="contents">
                     <div className="relative flex flex-1 flex-col gap-1.5 rounded-md border border-border bg-background px-2.5 py-3">
-                      <Node className="absolute right-2 top-2" />
-                      <span className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
-                        stp. {step.n}
-                      </span>
                       <span className="flex h-6 w-6 items-center justify-center rounded border border-border bg-card">
                         <Icon className="h-3.5 w-3.5" strokeWidth={2} />
                       </span>

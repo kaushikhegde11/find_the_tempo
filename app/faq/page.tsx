@@ -49,7 +49,6 @@ const FAQ: { q: string; a: string }[] = [
 export default function FaqPage() {
   return (
     <ContentPage
-      code="blck. faq"
       title="Frequently asked questions"
       path="/faq"
       intro="Short answers about screenshots, song detection, song links and privacy."

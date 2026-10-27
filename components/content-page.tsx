@@ -6,14 +6,12 @@ import { absoluteUrl, SITE_NAME } from '@/lib/site'
 // Shared faceplate shell for text pages (about, faq, privacy, terms): same device
 // frame as the rest of the app, a breadcrumb trail, one h1, then prose.
 export function ContentPage({
-  code,
   title,
   path,
   intro,
   updated,
   children,
 }: {
-  code: string
   title: string
   path: string
   intro?: string
@@ -41,8 +39,7 @@ export function ContentPage({
       />
       <section className="flex w-full flex-1 flex-col px-2.5 py-2.5">
         <div className="flex flex-1 flex-col overflow-hidden rounded-lg border border-border bg-card shadow-sm">
-          <div className="flex items-center justify-between border-b border-border px-4 py-2 font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground sm:px-6">
-            <span>{code}</span>
+          <div className="flex items-center justify-end border-b border-border px-4 py-2 font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground sm:px-6">
             <span className="flex items-center gap-1.5" aria-hidden>
               <span className="h-1.5 w-1.5 rounded-full bg-primary" />
               <span className="h-1.5 w-1.5 rounded-full bg-foreground/25" />
