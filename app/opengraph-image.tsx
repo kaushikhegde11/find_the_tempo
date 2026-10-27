@@ -1,6 +1,6 @@
 import { ImageResponse } from 'next/og'
 
-export const alt = 'Find the tempo: screenshot to song links and BPM'
+export const alt = 'Find the tempo: screenshot to song links'
 export const size = { width: 1200, height: 630 }
 export const contentType = 'image/png'
 
@@ -30,7 +30,7 @@ export default function OpenGraphImage() {
             Convert screenshots into findable links
           </div>
           <div style={{ marginTop: 28, fontSize: 34, color: '#5c554a' }}>
-            Apple Music · Spotify · YouTube Music · BPM
+            Apple Music · Spotify · YouTube Music
           </div>
         </div>
         <div style={{ display: 'flex', height: 18, background: '#ff6a3c', borderRadius: 4 }} />

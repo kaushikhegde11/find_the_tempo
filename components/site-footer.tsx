@@ -43,17 +43,6 @@ export function SiteFooter() {
           <p className="font-mono text-xs leading-relaxed text-black">
             apple music · spotify · youtube music. no login.
           </p>
-          <p className="font-mono text-xs leading-relaxed text-black">
-            bpm data by{' '}
-            <a
-              href="https://getsongbpm.com"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="underline underline-offset-2"
-            >
-              getsongbpm.com
-            </a>
-          </p>
         </FooterCol>
       </div>
 

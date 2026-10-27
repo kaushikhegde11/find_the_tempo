@@ -21,7 +21,7 @@ export default function TermsPage() {
     >
       <h2>The service</h2>
       <p>
-        Find the tempo reads a screenshot you upload and returns links and tempo information for the
+        Find the tempo reads a screenshot you upload and returns links for the
         songs it finds. It is a free personal project run by {AUTHOR_NAME}, provided as it is, and
         it can change or stop at any time.
       </p>
@@ -42,21 +42,16 @@ export default function TermsPage() {
 
       <h2>Accuracy</h2>
       <p>
-        Song detection uses AI and can be wrong. BPM values come from a public database and can be
-        missing or off. Links open searches or matches on third-party services and may lead to a
-        different version of a song. Check results before relying on them.
+        Song detection uses AI and can be wrong. Links open searches or matches on third-party
+        services and may lead to a different version of a song. Check results before relying on them.
       </p>
 
       <h2>Third-party services and trademarks</h2>
       <p>
         Apple Music, Spotify, YouTube Music, Beatport, SoundCloud, Discogs, Bandcamp, WhatsApp,
         Telegram, X and other names are trademarks of their owners and are used only to describe
-        where a link goes. Find the tempo is not affiliated with or endorsed by them. Tempo data
-        is provided by{' '}
-        <a href="https://getsongbpm.com" rel="noopener noreferrer" target="_blank">
-          GetSongBPM
-        </a>
-        . Using those services is subject to their own terms.
+        where a link goes. Find the tempo is not affiliated with or endorsed by them. Using those
+        services is subject to their own terms.
       </p>
 
       <h2>Ownership</h2>

@@ -4,7 +4,7 @@ import { UploadFlow } from '@/components/upload-flow'
 export const metadata: Metadata = {
   title: 'Upload a screenshot',
   description:
-    'Upload a screenshot of any tracklist and get Apple Music, Spotify and YouTube Music links for every song, with BPM.',
+    'Upload a screenshot of any tracklist and get Apple Music, Spotify and YouTube Music links for every song.',
   alternates: { canonical: '/upload' },
 }
 

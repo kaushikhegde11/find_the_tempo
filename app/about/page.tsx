@@ -7,7 +7,7 @@ import { AUTHOR_NAME, absoluteUrl } from '@/lib/site'
 export const metadata: Metadata = {
   title: 'About',
   description:
-    'Find the tempo is a small tool built by Kaushik Hegde that turns a screenshot of a tracklist into song links and BPM.',
+    'Find the tempo is a small tool built by Kaushik Hegde that turns a screenshot of a tracklist into song links.',
   alternates: { canonical: '/about' },
 }
 
@@ -44,14 +44,13 @@ export default function AboutPage() {
       </p>
       <p>
         Find the tempo does that part for you. Upload the screenshot, check what it found, and
-        open each song on the service you use. The tempo (BPM) is shown beside each song, which is
-        handy if you are building a set or picking music to run to.
+        open each song on the service you use.
       </p>
 
       <h2>How it is built</h2>
       <p>
         It is a Next.js site. An AI vision model reads the names off the image, the Apple Music
-        search finds the matching song, and a public BPM database supplies the tempo. There is no
+        search finds the matching song. There is no
         login, and nothing is added to your music accounts. See the{' '}
         <Link href="/privacy">privacy policy</Link> for what each outside service receives.
       </p>
@@ -83,13 +82,6 @@ export default function AboutPage() {
 
       <h2>Credits</h2>
       <ul>
-        <li>
-          Tempo data from{' '}
-          <a href="https://getsongbpm.com" rel="noopener noreferrer" target="_blank">
-            GetSongBPM
-          </a>
-          .
-        </li>
         <li>Song matching, artwork and 30-second previews from the Apple iTunes Search API.</li>
         <li>Typeface: Geist, by Vercel, under the SIL Open Font License.</li>
       </ul>

@@ -257,7 +257,6 @@ export function ResultsTable({ songs, platform, onEdit, onDelete }: ResultsTable
               <th className="px-4 py-3 text-left font-medium text-muted-foreground">Artist</th>
               <th className="px-4 py-3 text-left font-medium text-muted-foreground">Album</th>
               <th className="px-4 py-3 text-left font-medium text-muted-foreground">Genre</th>
-              <th className="px-4 py-3 text-left font-medium text-muted-foreground">BPM</th>
               <th className="px-4 py-3 text-right font-medium text-muted-foreground">
                 {SERVICE_NAME[platform]}
               </th>
@@ -356,11 +355,6 @@ export function ResultsTable({ songs, platform, onEdit, onDelete }: ResultsTable
                   {/* Genre */}
                   <td className="px-4 py-3 text-muted-foreground">
                     {song.genre || <span className="text-muted-foreground">—</span>}
-                  </td>
-
-                  {/* BPM */}
-                  <td className="px-4 py-3 text-muted-foreground">
-                    {song.bpm ?? <span className="text-muted-foreground">—</span>}
                   </td>
 
                   {/* Link + copy actions */}
@@ -468,16 +462,7 @@ export function ResultsTable({ songs, platform, onEdit, onDelete }: ResultsTable
       </div>
 
       <p className="text-xs text-muted-foreground">
-        BPM data from{' '}
-        <a
-          href="https://getsongbpm.com"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="underline underline-offset-2"
-        >
-          GetSongBPM
-        </a>
-        . Song matches, artwork and previews from Apple. Not affiliated with Apple, Spotify or
+        Song matches, artwork and previews from Apple. Not affiliated with Apple, Spotify or
         YouTube.
       </p>
 

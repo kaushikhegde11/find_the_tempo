@@ -12,7 +12,7 @@ const _geistMono = Geist_Mono({ subsets: ["latin"] });
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: {
-    default: `${SITE_NAME}: screenshot to song links and BPM`,
+    default: `${SITE_NAME}: screenshot to song links`,
     template: `%s | ${SITE_NAME}`,
   },
   description: SITE_DESCRIPTION,
@@ -20,13 +20,13 @@ export const metadata: Metadata = {
   openGraph: {
     type: 'website',
     siteName: SITE_NAME,
-    title: `${SITE_NAME}: screenshot to song links and BPM`,
+    title: `${SITE_NAME}: screenshot to song links`,
     description: SITE_DESCRIPTION,
     locale: 'en_US',
   },
   twitter: {
     card: 'summary_large_image',
-    title: `${SITE_NAME}: screenshot to song links and BPM`,
+    title: `${SITE_NAME}: screenshot to song links`,
     description: SITE_DESCRIPTION,
   },
   icons: {

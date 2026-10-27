@@ -6,7 +6,7 @@ import { JsonLd } from '@/components/json-ld'
 export const metadata: Metadata = {
   title: 'FAQ',
   description:
-    'Answers about Find the tempo: what screenshots work, how song detection and BPM lookup work, what is stored, and what it costs.',
+    'Answers about Find the tempo: what screenshots work, how song detection and song matching work, what is stored, and what it costs.',
   alternates: { canonical: '/faq' },
 }
 
@@ -14,7 +14,7 @@ export const metadata: Metadata = {
 const FAQ: { q: string; a: string }[] = [
   {
     q: 'What does Find the tempo do?',
-    a: 'You upload a screenshot of a tracklist, such as a playlist, a set list or a DJ mix page. It reads the song names and artists, then gives you a link for each song on Apple Music, Spotify and YouTube Music, plus the tempo in BPM when it can find one.',
+    a: 'You upload a screenshot of a tracklist, such as a playlist, a set list or a DJ mix page. It reads the song names and artists, then gives you a link for each song on Apple Music, Spotify and YouTube Music.',
   },
   {
     q: 'Which screenshots work best?',
@@ -23,10 +23,6 @@ const FAQ: { q: string; a: string }[] = [
   {
     q: 'How does it read the songs?',
     a: 'The image is sent to an AI vision model (Google Gemini) that returns the song names and artists as text. The result can contain mistakes, so check anything important. You can edit or delete any row before you open a link.',
-  },
-  {
-    q: 'Where does the BPM come from?',
-    a: 'BPM values come from GetSongBPM, a public database of song tempos. Not every song is in it, and some values are off by a factor of two (a 70 BPM song counted as 140). Treat it as a starting point and check by ear if it matters for your set.',
   },
   {
     q: 'Do you store my screenshots or song lists?',
@@ -56,7 +52,7 @@ export default function FaqPage() {
       code="blck. faq"
       title="Frequently asked questions"
       path="/faq"
-      intro="Short answers about screenshots, song detection, BPM and privacy."
+      intro="Short answers about screenshots, song detection, song links and privacy."
     >
       <JsonLd
         data={{

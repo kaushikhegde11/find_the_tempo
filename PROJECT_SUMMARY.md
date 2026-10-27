@@ -133,5 +133,5 @@ npm run dev   # http://localhost:3000
 ## Notes
 
 - Apple links require no key (public iTunes API); Spotify/YouTube links need no key either (search URLs). Only the screenshot read needs OpenRouter credit.
-- No auth, no database, no playlist writes. Outside the browser, data goes only to: the vision model (screenshot), iTunes Search (song terms), GetSongBPM (song terms, server-side, key in `GETSONGBPM_API_KEY`), Google Analytics (only after cookie consent), and Netlify Blobs (hashed-IP rate-limit counters, swept daily).
+- No auth, no database, no playlist writes. Outside the browser, data goes only to: the vision model (screenshot), iTunes Search (song terms), Google Analytics (only after cookie consent), and Netlify Blobs (hashed-IP rate-limit counters, swept daily).
 - Security/compliance: security headers + CSP in `next.config.mjs`; API input limits and per-IP rate limits in `lib/security.ts` and `lib/rate-limit.ts`; consent-gated GA in `components/cookie-consent.tsx`; legal pages at `/privacy` and `/terms`; SEO in `app/{robots,sitemap,manifest,opengraph-image}` plus per-page metadata and JSON-LD.

@@ -10,7 +10,7 @@ export const metadata: Metadata = {
   openGraph: {
     type: 'website',
     siteName: SITE_NAME,
-    title: `${SITE_NAME}: screenshot to song links and BPM`,
+    title: `${SITE_NAME}: screenshot to song links`,
     description: SITE_DESCRIPTION,
     url: '/',
     locale: 'en_US',
@@ -128,59 +128,6 @@ export default function LandingPage() {
               })}
             </div>
           </div>
-        </div>
-      </section>
-
-      {/* Below the fold — plain-language copy for people and search engines */}
-      <section aria-labelledby="about-heading" className="px-2.5 pb-2.5">
-        <div className="mx-auto max-w-3xl rounded-lg border border-border bg-card px-5 py-8 sm:px-8">
-          <h2 id="about-heading" className="text-2xl font-bold tracking-tight">
-            Find the tempo of any tracklist screenshot
-          </h2>
-          <p className="mt-3 text-[15px] leading-relaxed">
-            A DJ shares a set list on a story. A friend sends a playlist as a picture. You cannot tap
-            a picture. Upload the screenshot here and every song is read, matched and given a link on
-            Apple Music, Spotify and YouTube Music, along with its tempo in BPM when one is known.
-            No login, nothing added to your music account.
-          </p>
-
-          <h2 className="mt-8 text-2xl font-bold tracking-tight">Quick answers</h2>
-          <dl className="mt-3 space-y-4 text-[15px] leading-relaxed">
-            <div>
-              <dt className="font-semibold">What kind of screenshot works?</dt>
-              <dd className="text-muted-foreground">
-                Any clear image of a song list, up to 10 MB, in PNG, JPEG, WebP or GIF.
-              </dd>
-            </div>
-            <div>
-              <dt className="font-semibold">Is my screenshot saved?</dt>
-              <dd className="text-muted-foreground">
-                No. It is sent to an AI service to be read and is not kept by this site.
-              </dd>
-            </div>
-            <div>
-              <dt className="font-semibold">Where does the BPM come from?</dt>
-              <dd className="text-muted-foreground">
-                From the GetSongBPM database. Some songs are missing, so check by ear if it matters.
-              </dd>
-            </div>
-          </dl>
-          <p className="mt-4 text-[15px]">
-            More in the{' '}
-            <Link href="/faq" className="underline underline-offset-2">
-              FAQ
-            </Link>
-            .
-          </p>
-
-          <h2 className="mt-8 text-2xl font-bold tracking-tight">Made by</h2>
-          <p className="mt-3 text-[15px] leading-relaxed">
-            Find the tempo is built and maintained by {AUTHOR_NAME}.{' '}
-            <Link href="/about" className="underline underline-offset-2">
-              Read the story behind it
-            </Link>
-            .
-          </p>
         </div>
       </section>
 

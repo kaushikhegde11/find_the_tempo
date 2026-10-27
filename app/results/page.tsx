@@ -17,10 +17,7 @@ import {
 import { useAppContext } from '@/lib/context'
 import { Song } from '@/lib/types'
 
-// Apple-lookup and BPM-lookup run in parallel and each return a full song
-// object built from a snapshot that predates the other's result. Merge only
-// the defined keys from a lookup response so neither overwrites fields the
-// other already filled in with `undefined`.
+// Merge defined lookup fields against the current song state.
 function mergeDefined(base: Song, patch: Song): Song {
   const result: Song = { ...base }
   for (const [key, value] of Object.entries(patch)) {
@@ -51,9 +48,8 @@ export default function ResultsPage() {
   const songsRef = useRef(songs)
   songsRef.current = songs
 
-  // Consider enriched once any song has an Apple link / a BPM value.
+  // Consider enriched once any song has an Apple link.
   const alreadyEnriched = songs.some((s) => s.appleMusicUrl)
-  const alreadyHasBpm = songs.some((s) => s.bpm !== undefined)
 
   // Re-run the Apple lookup for a single (edited) song and merge the result.
   const applyApple = async (target: Song) => {
@@ -71,23 +67,7 @@ export default function ResultsPage() {
     }
   }
 
-  // Re-run the BPM lookup for a single (edited) song and merge the result.
-  const applyBpm = async (target: Song) => {
-    try {
-      const res = await fetch('/api/bpm/search', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ songs: [target] }),
-      })
-      if (!res.ok) return
-      const enriched = (await res.json()).songs?.[0] as Song | undefined
-      if (enriched) setSongs(mergeSongsById(songsRef.current, [enriched]))
-    } catch {
-      /* BPM is a nice-to-have — leave it unset on failure */
-    }
-  }
-
-  // Edit a song's name/artist: clear stale link data, then re-look-up Apple + BPM.
+  // Edit a song's name/artist: clear stale link data, then re-look-up Apple Music.
   const handleEdit = (id: string, name: string, artist: string) => {
     const base = songsRef.current.find((s) => s.id === id)
     if (!base) return
@@ -104,11 +84,9 @@ export default function ResultsPage() {
       spotifyTrackId: undefined,
       previewUrl: undefined,
       genre: undefined,
-      bpm: undefined,
     }
     setSongs(songsRef.current.map((s) => (s.id === id ? cleared : s)))
     applyApple(cleared)
-    applyBpm(cleared)
   }
 
   const handleDelete = (id: string) => {
@@ -124,8 +102,7 @@ export default function ResultsPage() {
 
     // Only Apple Music needs a lookup (exact links + previews, plus genre).
     // Spotify and YouTube Music use key-free search links built client-side
-    // in the table. BPM comes from a separate GetSongBPM lookup that runs in
-    // parallel — it's a nice-to-have, so its failure doesn't surface `error`.
+    // in the table.
     fetch('/api/apple-music/search', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -141,31 +118,6 @@ export default function ResultsPage() {
       })
       .finally(() => {
         if (!cancelled) setLoading(false)
-      })
-
-    return () => {
-      cancelled = true
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
-
-  useEffect(() => {
-    if (songs.length === 0 || alreadyHasBpm) return
-
-    let cancelled = false
-
-    fetch('/api/bpm/search', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ songs }),
-    })
-      .then(async (res) => {
-        if (!res.ok) return
-        const data = await res.json()
-        if (!cancelled) setSongs(mergeSongsById(songsRef.current, data.songs as Song[]))
-      })
-      .catch(() => {
-        /* BPM is a nice-to-have — leave it unset on failure */
       })
 
     return () => {

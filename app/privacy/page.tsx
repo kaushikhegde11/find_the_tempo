@@ -38,8 +38,8 @@ export default function PrivacyPage() {
         </li>
         <li>
           <strong>Song names and artists.</strong> After the image is read, the text of each song is
-          sent to the Apple iTunes Search API to find the song, and to GetSongBPM to find its
-          tempo. Your song list otherwise stays in your browser tab and is gone when you close it.
+          sent to the Apple iTunes Search API to find the song. Your song list otherwise stays in
+          your browser tab and is gone when you close it.
         </li>
         <li>
           <strong>Artwork and previews.</strong> Cover art and 30-second previews load directly from
@@ -80,7 +80,7 @@ export default function PrivacyPage() {
       <h2>Who receives data</h2>
       <p>
         Google (AI vision, and Analytics if you accept), OpenRouter (only if used to reach the
-        model), Apple (song search, artwork, previews), GetSongBPM (tempo lookups) and Netlify
+        model), Apple (song search, artwork, previews) and Netlify
         (hosting). Some of these are in the United States or other countries outside your own, and
         they apply their own safeguards. Data is not sold and is not used for advertising by this
         site.
