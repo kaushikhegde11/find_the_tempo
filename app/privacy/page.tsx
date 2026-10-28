@@ -17,7 +17,7 @@ export default function PrivacyPage() {
       title="Privacy policy"
       path="/privacy"
       intro="Plain-language summary: no accounts, no ads, no selling of data. Your screenshot goes to an AI service to be read, and analytics run only if you allow them."
-      updated="27 October 2026"
+      updated="28 October 2026"
     >
       <h2>Who is responsible</h2>
       <p>
@@ -32,13 +32,14 @@ export default function PrivacyPage() {
           <strong>Your screenshot.</strong> When you upload an image, it is sent to an AI vision
           service run by Google (the Gemini models), either directly or through the OpenRouter
           routing service, to read the song names. This site does not save the image. The
-          provider may keep it briefly under its own terms. Screenshots can show usernames,
+          provider&apos;s retention and data-use rules depend on the service and account settings;
+          this site cannot promise immediate deletion by those providers. Screenshots can show usernames,
           avatars or notifications, so crop those out first.
         </li>
         <li>
           <strong>Song names and artists.</strong> After the image is read, the text of each song is
           sent to the Apple iTunes Search API to find the song. Your song list otherwise stays in
-          your browser tab and is gone when you close it.
+          your browser memory and clears when you reload or close the tab.
         </li>
         <li>
           <strong>Artwork and previews.</strong> Cover art and 30-second previews load directly from
@@ -46,12 +47,14 @@ export default function PrivacyPage() {
         </li>
         <li>
           <strong>Hosting and logs.</strong> The site is hosted on Netlify, which processes your IP
-          address and request details to deliver pages and may keep short-term server logs.
+          address and request details to deliver pages and may retain server logs under its own policies.
         </li>
         <li>
           <strong>Abuse protection.</strong> To stop automated misuse, the upload and lookup
           requests are counted per visitor. The count is stored under a one-way hash of your IP
-          address and the date, never the address itself, and is deleted within about a day.
+          address and the date, rather than the raw address. Counts expire after an hour;
+          deletion of stored entries from earlier days is best effort and can happen later.
+          These hashes are pseudonymous identifiers, not a guarantee of anonymity.
         </li>
       </ul>
 
@@ -66,7 +69,9 @@ export default function PrivacyPage() {
       </p>
       <p>
         <CookieSettingsButton className="font-mono text-sm underline underline-offset-2" /> reopens
-        the choice at any time. Withdrawing consent also removes the Google Analytics cookies.
+        the choice at any time. Withdrawing consent stops future analytics collection in this
+        browser and removes the Google Analytics cookies. It does not delete data already sent
+        to Google. Global Privacy Control keeps analytics disabled even if you reopen the choice.
       </p>
 
       <h2>Why we are allowed to use it (legal bases)</h2>
@@ -79,27 +84,36 @@ export default function PrivacyPage() {
       <h2>Who receives data</h2>
       <p>
         Google (AI vision, and Analytics if you accept), OpenRouter (only if used to reach the
-        model), Apple (song search, artwork, previews) and Netlify
-        (hosting). Some of these are in the United States or other countries outside your own, and
-        they apply their own safeguards. Data is not sold and is not used for advertising by this
-        site.
+        model), Apple (song search, artwork, previews) and Netlify (hosting) receive the data
+        described above. They may process it outside your country under their own policies.
+        This site does not sell your data or use it for advertising.
+      </p>
+      <p>
+        Provider information:{' '}
+        <a href="https://cloud.google.com/vertex-ai/generative-ai/docs/data-governance">Google Vertex AI data governance</a>,{' '}
+        <a href="https://ai.google.dev/gemini-api/terms">Gemini API terms</a>,{' '}
+        <a href="https://openrouter.ai/privacy">OpenRouter privacy policy</a>,{' '}
+        <a href="https://www.apple.com/legal/privacy/">Apple privacy policy</a>,{' '}
+        <a href="https://www.netlify.com/privacy/">Netlify privacy policy</a>, and{' '}
+        <a href="https://policies.google.com/privacy">Google privacy policy</a>.
       </p>
 
       <h2>How long data is kept</h2>
       <p>
-        Screenshots and song lists are not kept by this site. Abuse-protection counters last about
-        a day. Analytics data, if you accept it, follows Google Analytics retention settings.
-        Hosting logs follow Netlify&apos;s retention.
+        Screenshots and song lists are not saved by this site. The AI provider applies its own
+        retention rules. Abuse-protection counts expire hourly, with older stored entries removed
+        on a best-effort basis. Analytics data, if you accept it, follows the configured Google
+        Analytics retention settings. Hosting logs follow Netlify&apos;s retention policy.
       </p>
 
       <h2>Your rights</h2>
       <p>
-        Depending on where you live (for example under the GDPR, UK GDPR, California law or India&apos;s
-        DPDP Act) you can ask what data is held about you, ask for it to be corrected or deleted,
+        Depending on the law that applies where you live, you may have rights to ask what data
+        is held about you, ask for it to be corrected or deleted,
         object to processing, withdraw consent, and complain to your data protection authority.
-        Because this site does not keep an account or a profile, there is usually nothing stored to
-        look up, but write to <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a> and your
-        request will be answered.
+        This site has no accounts or persistent song profiles. Write to{' '}
+        <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a> to make a request. Include the
+        page and approximate time involved, but do not send passwords or identity documents.
       </p>
 
       <h2>Children</h2>

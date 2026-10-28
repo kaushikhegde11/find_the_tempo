@@ -49,13 +49,15 @@ export function UploadFlow({ headingLevel = 1 }: { headingLevel?: 1 | 2 } = {}) 
     const validFiles: File[] = []
     for (const file of files) {
       const isValid = await validateImage(file)
-      if (isValid) {
-        validFiles.push(file)
+      if (!isValid) {
+        setError('Upload PNG, JPEG or WebP images up to 10 MB each. Remove unsupported or oversized files and try again.')
+        return
       }
+      validFiles.push(file)
     }
 
     if (validFiles.length === 0) {
-      setError('No valid image files. Please upload PNG, JPEG or WebP images under 10 MB.')
+      setError('Choose a PNG, JPEG or WebP image up to 10 MB.')
       return
     }
 

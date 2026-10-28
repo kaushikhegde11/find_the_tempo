@@ -10,7 +10,6 @@
     "lint": "eslint ."
   },
   "dependencies": {
-    "@hookform/resolvers": "^3.9.1",
     "@netlify/blobs": "^11.1.6",
     "@next/third-parties": "^16.4.3",
     "@radix-ui/react-accordion": "1.2.12",
@@ -59,8 +58,7 @@
     "recharts": "2.15.0",
     "sonner": "^1.7.1",
     "tailwind-merge": "^3.3.1",
-    "vaul": "^1.1.2",
-    "zod": "^3.24.1"
+    "vaul": "^1.1.2"
   },
   "overrides": {
     "next": {

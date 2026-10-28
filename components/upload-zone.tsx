@@ -38,13 +38,8 @@ export function UploadZone({
       if (disabled || isProcessing) return
 
       const files = Array.from(e.dataTransfer.files)
-      const imageFiles = files.filter((file) =>
-        ['image/png', 'image/jpeg', 'image/webp'].includes(file.type)
-      )
-
-      if (imageFiles.length > 0) {
-        onFilesSelected(imageFiles)
-      }
+      // Let UploadFlow validate every file and announce unsupported selections.
+      if (files.length > 0) onFilesSelected(files)
     },
     [disabled, isProcessing, onFilesSelected]
   )
@@ -52,6 +47,7 @@ export function UploadZone({
   const handleChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
       const files = Array.from(e.target.files || [])
+      e.target.value = ''
       if (files.length > 0) {
         onFilesSelected(files)
       }
@@ -87,7 +83,7 @@ export function UploadZone({
       <div className="flex flex-col items-center gap-4">
         <div className="rounded-full border border-primary/30 bg-primary/10 p-4 shadow-[inset_0_2px_6px_rgba(0,0,0,0.30)]">
           <CassetteTape
-            className={cn('h-8 w-8 text-primary', isDragActive && 'animate-bounce')}
+            className={cn('h-8 w-8 text-primary', isDragActive && 'motion-safe:animate-bounce')}
           />
         </div>
 

@@ -40,21 +40,21 @@ export function SiteFooter() {
       {/* Site links */}
       <nav
         aria-label="Site"
-        className="flex flex-wrap items-center gap-x-5 gap-y-1 border-t border-black/20 px-4 py-2 font-mono text-xs uppercase tracking-[0.12em] sm:px-6"
+        className="flex flex-wrap items-center gap-x-3 gap-y-1 border-t border-black/20 px-4 py-2 font-mono text-xs uppercase tracking-[0.12em] sm:px-6"
       >
-        <Link href="/about" className="underline-offset-2 hover:underline">
+        <Link href="/about" className="inline-flex min-h-11 min-w-11 items-center justify-center px-2 underline-offset-2 hover:underline">
           About
         </Link>
-        <Link href="/faq" className="underline-offset-2 hover:underline">
+        <Link href="/faq" className="inline-flex min-h-11 min-w-11 items-center justify-center px-2 underline-offset-2 hover:underline">
           FAQ
         </Link>
-        <Link href="/privacy" className="underline-offset-2 hover:underline">
+        <Link href="/privacy" className="inline-flex min-h-11 min-w-11 items-center justify-center px-2 underline-offset-2 hover:underline">
           Privacy
         </Link>
-        <Link href="/terms" className="underline-offset-2 hover:underline">
+        <Link href="/terms" className="inline-flex min-h-11 min-w-11 items-center justify-center px-2 underline-offset-2 hover:underline">
           Terms
         </Link>
-        <CookieSettingsButton className="uppercase tracking-[0.12em] underline-offset-2 hover:underline" />
+        <CookieSettingsButton className="inline-flex min-h-11 items-center px-2 uppercase tracking-[0.12em] underline-offset-2 hover:underline" />
       </nav>
 
       {/* Bottom bar */}
@@ -99,7 +99,7 @@ function FooterLink({
       href={href}
       target="_blank"
       rel="noopener noreferrer"
-      className="te-key te-key--light te-key--sm inline-flex w-full items-center justify-center gap-2 rounded-md bg-card px-3 py-1.5 text-center font-mono text-xs font-semibold uppercase tracking-wide text-foreground"
+      className="te-key te-key--light te-key--sm inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-md bg-card px-3 py-1.5 text-center font-mono text-xs font-semibold uppercase tracking-wide text-foreground"
     >
       {icon}
       {children}

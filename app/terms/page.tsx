@@ -16,20 +16,20 @@ export default function TermsPage() {
       title="Terms of use"
       path="/terms"
       intro="Using Find the tempo means you agree to these short terms."
-      updated="27 October 2026"
+      updated="28 October 2026"
     >
       <h2>The service</h2>
       <p>
         Find the tempo reads a screenshot you upload and returns links for the
         songs it finds. It is a free personal project run by {AUTHOR_NAME}, provided as it is, and
-        it can change or stop at any time.
+        it can change or stop at any time. No account, subscription or payment is required.
       </p>
 
       <h2>Your uploads</h2>
       <ul>
         <li>Only upload images you have the right to use.</li>
         <li>Do not upload images that contain other people&apos;s private information.</li>
-        <li>Do not upload unlawful content. Images are limited to 10 MB.</li>
+        <li>Do not upload unlawful content. Use PNG, JPEG or WebP images up to 10 MB each.</li>
       </ul>
 
       <h2>Acceptable use</h2>
@@ -45,6 +45,12 @@ export default function TermsPage() {
         services and may lead to a different version of a song. Check results before relying on them.
       </p>
 
+      <h2>Privacy</h2>
+      <p>
+        Uploading sends your screenshot to an AI provider to read the song names. Crop out
+        personal details first. The <Link href="/privacy">privacy policy</Link> explains who
+        receives the image and song text, retention limits and analytics choices.
+      </p>
       <h2>Third-party services and trademarks</h2>
       <p>
         Apple Music, Spotify, YouTube Music, Beatport, SoundCloud, Discogs, Bandcamp, WhatsApp,

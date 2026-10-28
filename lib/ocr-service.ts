@@ -18,11 +18,21 @@ export async function extractSongsFromScreenshot(
   })
 
   if (!response.ok) {
-    const err = await response.json().catch(() => ({ error: 'Unknown error' }))
+    // Netlify can return HTML or its own JSON envelope on gateway failures.
+    const err = await response.json().catch(() => null)
+    if (typeof err?.error === 'string' && err.error.trim()) {
+      throw new Error(err.error)
+    }
+    if (response.status === 504) {
+      throw new Error('Song detection took too long. Please try again.')
+    }
+    if (response.status === 502 || response.status === 503) {
+      throw new Error('Song detection is temporarily unavailable. Please try again shortly.')
+    }
     if (response.status === 429) {
       throw new Error('You have reached the upload limit for now. Please try again in a while.')
     }
-    throw new Error(err.error || response.statusText || 'Something went wrong')
+    throw new Error('Screenshot upload failed. Please try again.')
   }
 
   const data = await response.json()

@@ -18,9 +18,9 @@ export const metadata: Metadata = {
 }
 
 const STEPS = [
-  { icon: ImageUp, label: 'Upload screenshot', hint: 'any tracklist image' },
-  { icon: ScanLine, label: 'Detect songs', hint: 'names & artists, read for you' },
-  { icon: Link2, label: 'Get links', hint: 'apple · spotify · youtube' },
+  { icon: ImageUp, label: 'Upload screenshot', hint: 'A playlist or shared song list' },
+  { icon: ScanLine, label: 'Detect songs', hint: 'Names and artists, read for you' },
+  { icon: Link2, label: 'Get links', hint: 'Apple · Spotify · YouTube' },
 ]
 
 export default function LandingPage() {
@@ -69,8 +69,8 @@ export default function LandingPage() {
                 Convert screenshots into findable links
               </h1>
               <p className="mx-auto mt-5 max-w-xl font-mono text-sm leading-relaxed text-muted-foreground">
-                Upload a screenshot of any tracklist. Get every song as a ready to use link on
-                Apple Music, Spotify, and YouTube Music.
+                Found songs in a screenshot? Upload it, check the song names, and open them on
+                Apple Music, Spotify, or YouTube Music. Free, with no account needed.
               </p>
               <div className="mt-8">
                 <Link
@@ -98,7 +98,7 @@ export default function LandingPage() {
                       </span>
                       <div>
                         <h3 className="text-xs font-semibold">{step.label}</h3>
-                        <div className="font-mono text-[9px] uppercase tracking-wide text-muted-foreground">
+                        <div className="font-mono text-xs leading-relaxed text-muted-foreground">
                           {step.hint}
                         </div>
                       </div>

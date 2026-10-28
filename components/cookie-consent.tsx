@@ -15,6 +15,18 @@ const GA_ID = process.env.NEXT_PUBLIC_GA_ID
 const BANNER_ENABLED = !!GA_ID
 const LOAD_GA = BANNER_ENABLED && process.env.NODE_ENV === 'production'
 
+function hasGlobalPrivacyControl() {
+  return (navigator as Navigator & { globalPrivacyControl?: boolean }).globalPrivacyControl === true
+}
+
+function setAnalyticsEnabled(enabled: boolean) {
+  if (GA_ID) {
+    // Google's opt-out flag also stops hits from an already-loaded GA script.
+    const analyticsWindow = window as unknown as Record<string, unknown>
+    analyticsWindow[`ga-disable-${GA_ID}`] = !enabled
+  }
+}
+
 function readChoice(): Choice | null {
   try {
     const v = window.localStorage.getItem(STORAGE_KEY)
@@ -57,10 +69,14 @@ export function CookieConsent() {
   const [choice, setChoice] = useState<Choice | null>(null)
   const [open, setOpen] = useState(false)
   const [ready, setReady] = useState(false)
+  const [gpc, setGpc] = useState(false)
 
   useEffect(() => {
-    const gpc = (navigator as Navigator & { globalPrivacyControl?: boolean }).globalPrivacyControl
+    const gpc = hasGlobalPrivacyControl()
     const saved = gpc ? 'denied' : readChoice()
+    setGpc(gpc)
+    setAnalyticsEnabled(saved === 'granted')
+    if (saved === 'denied') clearAnalyticsCookies()
     setChoice(saved)
     setOpen(saved === null && BANNER_ENABLED)
     setReady(true)
@@ -71,10 +87,12 @@ export function CookieConsent() {
   }, [])
 
   const decide = useCallback((next: Choice) => {
-    writeChoice(next)
-    setChoice(next)
+    const effective = hasGlobalPrivacyControl() ? 'denied' : next
+    setAnalyticsEnabled(effective === 'granted')
+    writeChoice(effective)
+    setChoice(effective)
     setOpen(false)
-    if (next === 'denied') clearAnalyticsCookies()
+    if (effective === 'denied') clearAnalyticsCookies()
   }, [])
 
   if (!ready) return null
@@ -95,19 +113,21 @@ export function CookieConsent() {
               <Link href="/privacy" className="underline underline-offset-2">
                 Privacy policy
               </Link>
+              {gpc && <span className="mt-2 block">Global Privacy Control is enabled. Analytics stays off.</span>}
             </p>
             <div className="flex shrink-0 gap-2">
               <button
                 type="button"
                 onClick={() => decide('denied')}
-                className="te-key te-key--light rounded-md bg-card px-4 py-2 font-mono text-xs font-semibold uppercase tracking-wide text-foreground"
+                className="te-key te-key--light min-h-11 rounded-md bg-card px-4 py-2 font-mono text-xs font-semibold uppercase tracking-wide text-foreground"
               >
                 Reject
               </button>
               <button
                 type="button"
                 onClick={() => decide('granted')}
-                className="te-key rounded-md bg-primary px-4 py-2 font-mono text-xs font-semibold uppercase tracking-wide text-primary-foreground"
+                disabled={gpc}
+                className="te-key min-h-11 rounded-md bg-primary px-4 py-2 font-mono text-xs font-semibold uppercase tracking-wide text-primary-foreground disabled:cursor-not-allowed disabled:opacity-50"
               >
                 Accept
               </button>

@@ -73,7 +73,7 @@ export function ProcessingState({
               </div>
             ) : index === displayStage ? (
               <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary/10">
-                <Loader2 className="h-5 w-5 animate-spin text-primary" />
+                <Loader2 className="h-5 w-5 motion-safe:animate-spin text-primary" />
               </div>
             ) : (
               <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-muted text-foreground">

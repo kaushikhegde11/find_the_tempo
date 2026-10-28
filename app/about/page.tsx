@@ -16,7 +16,7 @@ export default function AboutPage() {
     <ContentPage
       title="About Find the tempo"
       path="/about"
-      intro="A small tool for people who keep finding songs in screenshots."
+      intro="A free tool for everyday listeners collecting songs from screenshots."
     >
       <JsonLd
         data={{
@@ -37,8 +37,8 @@ export default function AboutPage() {
 
       <h2>Why it exists</h2>
       <p>
-        Tracklists travel as images: a DJ posts a set list on a story, a friend screenshots a
-        playlist, a festival shares a lineup card. You cannot tap a picture. Typing each song into
+        Song recommendations travel as images: a friend screenshots a playlist or shares a
+        song list in a story. You cannot tap a picture. Typing each song into
         a search bar one by one is slow, and it is easy to give up halfway.
       </p>
       <p>
@@ -56,7 +56,7 @@ export default function AboutPage() {
 
       <h2>Why it looks like this</h2>
       <p>
-        The look is borrowed from small music hardware: a flat faceplate, labelled blocks, one
+        The look is borrowed from small music hardware: a flat faceplate, one
         orange accent and physical-looking keys. The job is three steps (upload, detect, get
         links), so the page is kept to one device with one clear action instead of a menu of
         features. Motion respects your reduced-motion setting.
@@ -91,8 +91,9 @@ export default function AboutPage() {
 
       <h2>Accessibility</h2>
       <p>
-        The site aims to meet WCAG 2.2 level AA. It works with a keyboard, has a skip link, and
-        respects reduced-motion settings. If something blocks you, please email so it can be fixed.
+        The site includes a skip link, keyboard controls and reduced-motion support.
+        Accessibility testing is ongoing. If something blocks you, email{' '}
+        <Link href="/privacy">the contact on the privacy page</Link> with the page and what happened.
       </p>
     </ContentPage>
   )

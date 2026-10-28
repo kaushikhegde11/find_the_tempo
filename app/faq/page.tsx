@@ -18,7 +18,7 @@ const FAQ: { q: string; a: string }[] = [
   },
   {
     q: 'Which screenshots work best?',
-    a: 'Clear PNG, JPEG, WebP or GIF images up to 10 MB where the song titles and artist names are readable. Crop out anything that is not the list. If a name is cut off at the edge, that song may be misread, so you can edit any row in the results before you open a link.',
+    a: 'Clear PNG, JPEG or WebP images up to 10 MB where the song titles and artist names are readable. GIF uploads are not supported. Crop out anything that is not the list. If a name is cut off at the edge, that song may be misread, so you can edit any row in the results before you open a link.',
   },
   {
     q: 'How does it read the songs?',
@@ -26,7 +26,7 @@ const FAQ: { q: string; a: string }[] = [
   },
   {
     q: 'Do you store my screenshots or song lists?',
-    a: 'No. The screenshot is passed to the AI service to read it and is not saved by this site. Your song list stays in your browser tab and is gone when you close it. The privacy policy lists exactly which outside services see what.',
+    a: 'This site does not save your screenshots or song lists. The screenshot is sent to an AI service to read it; that provider has its own data policies. Your song list stays in browser memory and clears when you reload or close the tab. The privacy policy describes the services involved.',
   },
   {
     q: 'Do I need an account?',
@@ -42,7 +42,7 @@ const FAQ: { q: string; a: string }[] = [
   },
   {
     q: 'Why is the site designed like a piece of hardware?',
-    a: 'It borrows from pocket synths and drum machines: a flat faceplate, labelled blocks, one orange accent, and keys that look pressable. The tool does one job in three steps, so the interface is built to feel like one small device, not a busy web app.',
+    a: 'It borrows from pocket synths and drum machines: a flat faceplate, one orange accent, and keys that look pressable. The tool does one job in three steps, so the interface is built to feel like one small device, not a busy web app.',
   },
 ]
 

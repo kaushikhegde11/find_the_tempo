@@ -189,15 +189,15 @@ export default function ResultsPage() {
 
               {/* Loading */}
               {loading && (
-                <div className="flex items-center gap-3 rounded-md border border-border bg-muted/30 px-4 py-3 text-sm text-muted-foreground">
-                  <Loader2 className="h-4 w-4 animate-spin" />
+                <div role="status" className="flex items-center gap-3 rounded-md border border-border bg-muted/30 px-4 py-3 text-sm text-muted-foreground">
+                  <Loader2 className="h-4 w-4 motion-safe:animate-spin" />
                   Finding links across services…
                 </div>
               )}
 
               {/* Error */}
               {error && (
-                <div className="rounded-md border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive">
+                <div role="alert" className="rounded-md border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive">
                   {error}
                 </div>
               )}
